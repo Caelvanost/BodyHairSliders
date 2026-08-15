@@ -41,6 +41,11 @@ namespace BHS
         std::vector<Provider> providers;
         bool matchHairByDefault{ true };
 
+        bool proofOfConceptEnabled{ false };
+        std::string proofOfConceptRegion{ "pubic" };
+        std::string proofOfConceptSex{ "female" };
+        std::size_t proofOfConceptStyleIndex{ 0 };
+
         static Settings& GetSingleton();
         bool Load();
 
