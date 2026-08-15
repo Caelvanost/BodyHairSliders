@@ -4,30 +4,90 @@
     {
       "id": "nordic_warmaiden",
       "name": "Nordic Warmaiden Body Hair",
+      "plugin": "Nordic Warmaiden Body Hair.esp",
+      "scanRules": [
+        {
+          "directory": "Data/Textures/Actors/Nordic Warmaiden Hair",
+          "region": "pubic",
+          "sex": "female",
+          "prefix": "dePog - Pubes - ",
+          "suffix": ".dds",
+          "pairDarkFair": true
+        },
+        {
+          "directory": "Data/Textures/Actors/Nordic Warmaiden Hair",
+          "region": "armpits",
+          "sex": "female",
+          "prefix": "dePog - Pits - ",
+          "suffix": ".dds",
+          "pairDarkFair": true
+        },
+        {
+          "directory": "Data/Textures/Actors/Nordic Warmaiden Hair",
+          "region": "stomach",
+          "sex": "female",
+          "prefix": "dePog - Navel - ",
+          "suffix": ".dds",
+          "pairDarkFair": true
+        },
+        {
+          "directory": "Data/Textures/Actors/Nordic Warmaiden Hair",
+          "region": "butt",
+          "sex": "female",
+          "prefix": "dePog - Crack - ",
+          "suffix": ".dds",
+          "pairDarkFair": true
+        },
+        {
+          "directory": "Data/Textures/Actors/Nordic Warmaiden Hair",
+          "region": "back",
+          "sex": "female",
+          "prefix": "dePog - Beast - ",
+          "suffix": ".dds",
+          "pairDarkFair": true
+        }
+      ]
+    },
+    {
+      "id": "pubic_hairstyles_cbbe",
+      "name": "Pubic Hairstyles / Pubes Forever (Female)",
       "plugin": "",
-      "styles": [
-        { "id": "warmaiden_pubic_01", "region": "pubic", "label": "Warmaiden Pubic 01", "type": "overlay", "texture": "TODO/NordicWarmaiden/pubic_01.dds" },
-        { "id": "warmaiden_armpit_01", "region": "armpits", "label": "Warmaiden Armpits 01", "type": "overlay", "texture": "TODO/NordicWarmaiden/armpit_01.dds" },
-        { "id": "warmaiden_butt_01", "region": "butt", "label": "Warmaiden Butt 01", "type": "overlay", "texture": "TODO/NordicWarmaiden/butt_01.dds" }
+      "scanRules": [
+        {
+          "directory": "Data/textures/actors/character/ak_rm_pubic_hair_all_in_one",
+          "region": "pubic",
+          "sex": "female",
+          "prefix": "ak_",
+          "suffix": ".dds",
+          "excludeSuffix": "M.dds"
+        }
+      ]
+    },
+    {
+      "id": "pubes_forever_male",
+      "name": "Pubes Forever (Male)",
+      "plugin": "AK_RM_PubicStyles_All_In_One_M.esp",
+      "scanRules": [
+        {
+          "directory": "Data/textures/actors/character/ak_rm_pubic_hair_all_in_one",
+          "region": "pubic",
+          "sex": "male",
+          "prefix": "ak_",
+          "suffix": "M.dds"
+        }
       ]
     },
     {
       "id": "himbo_bodyhair",
       "name": "HIMBO V3 Bodyhair Overlays for Racemenu",
       "plugin": "",
-      "styles": []
-    },
-    {
-      "id": "pubes_forever",
-      "name": "Pubes Forever",
-      "plugin": "",
-      "styles": []
+      "scanRules": []
     },
     {
       "id": "opubes",
-      "name": "OPubes",
-      "plugin": "",
-      "styles": []
+      "name": "OPubes NG compatibility bridge",
+      "plugin": "OPubes.esp",
+      "scanRules": []
     }
   ]
 }
