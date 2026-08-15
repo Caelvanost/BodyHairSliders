@@ -1,0 +1,8 @@
+{
+  "name": "nordic-body-hair-sliders",
+  "version-string": "0.1.0",
+  "dependencies": [
+    "commonlibsse-ng",
+    "nlohmann-json"
+  ]
+}

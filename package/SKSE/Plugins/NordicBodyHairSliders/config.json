@@ -1,0 +1,15 @@
+{
+  "matchHairByDefault": true,
+  "pubic": [
+    { "id": "none", "label": "None", "texture": "" },
+    { "id": "warmaiden_pubic_01", "label": "Warmaiden Pubic 01", "texture": "TODO/NordicWarmaiden/pubic_01.dds" }
+  ],
+  "armpits": [
+    { "id": "none", "label": "None", "texture": "" },
+    { "id": "warmaiden_armpit_01", "label": "Warmaiden Armpits 01", "texture": "TODO/NordicWarmaiden/armpit_01.dds" }
+  ],
+  "butt": [
+    { "id": "none", "label": "None", "texture": "" },
+    { "id": "warmaiden_butt_01", "label": "Warmaiden Butt 01", "texture": "TODO/NordicWarmaiden/butt_01.dds" }
+  ]
+}
