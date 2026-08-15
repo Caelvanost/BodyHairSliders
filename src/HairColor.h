@@ -1,6 +1,6 @@
 #pragma once
 
-namespace NBHS
+namespace BHS
 {
     struct RGBA
     {
