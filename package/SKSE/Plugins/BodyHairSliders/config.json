@@ -1,0 +1,33 @@
+{
+  "matchHairByDefault": true,
+  "providers": [
+    {
+      "id": "nordic_warmaiden",
+      "name": "Nordic Warmaiden Body Hair",
+      "plugin": "",
+      "styles": [
+        { "id": "warmaiden_pubic_01", "region": "pubic", "label": "Warmaiden Pubic 01", "type": "overlay", "texture": "TODO/NordicWarmaiden/pubic_01.dds" },
+        { "id": "warmaiden_armpit_01", "region": "armpits", "label": "Warmaiden Armpits 01", "type": "overlay", "texture": "TODO/NordicWarmaiden/armpit_01.dds" },
+        { "id": "warmaiden_butt_01", "region": "butt", "label": "Warmaiden Butt 01", "type": "overlay", "texture": "TODO/NordicWarmaiden/butt_01.dds" }
+      ]
+    },
+    {
+      "id": "himbo_bodyhair",
+      "name": "HIMBO V3 Bodyhair Overlays for Racemenu",
+      "plugin": "",
+      "styles": []
+    },
+    {
+      "id": "pubes_forever",
+      "name": "Pubes Forever",
+      "plugin": "",
+      "styles": []
+    },
+    {
+      "id": "opubes",
+      "name": "OPubes",
+      "plugin": "",
+      "styles": []
+    }
+  ]
+}
