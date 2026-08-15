@@ -25,11 +25,11 @@ namespace BHS
         }
 
         const auto* base = actor->GetActorBase();
-        if (!base || !base->hairColor) {
+        if (!base || !base->headRelatedData || !base->headRelatedData->hairColor) {
             return {};
         }
 
-        const auto& color = base->hairColor->color;
+        const auto& color = base->headRelatedData->hairColor->color;
         return {
             static_cast<float>(color.red) / 255.0F,
             static_cast<float>(color.green) / 255.0F,
