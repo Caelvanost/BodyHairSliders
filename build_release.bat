@@ -7,18 +7,27 @@ if "%VCPKG_ROOT%"=="" (
   exit /b 1
 )
 
+if exist build rmdir /s /q build
+
 echo [1/4] Configuring...
-cmake --preset release || exit /b 1
+cmake -S . -B build ^
+  -DCMAKE_BUILD_TYPE=Release ^
+  -DCMAKE_TOOLCHAIN_FILE="%VCPKG_ROOT%\scripts\buildsystems\vcpkg.cmake"
+if errorlevel 1 exit /b %errorlevel%
 
 echo [2/4] Building...
-cmake --build --preset release || exit /b 1
+cmake --build build --config Release
+if errorlevel 1 exit /b %errorlevel%
 
 echo [3/4] Preparing package...
 if not exist "package\SKSE\Plugins" mkdir "package\SKSE\Plugins"
 if not exist "dist" mkdir "dist"
 
-for /f "delims=" %%F in ('dir /b /s "build\Release\BodyHairSliders.dll" 2^>nul') do copy /y "%%F" "package\SKSE\Plugins\BodyHairSliders.dll" >nul
-if not exist "package\SKSE\Plugins\BodyHairSliders.dll" (
+if exist "build\Release\BodyHairSliders.dll" (
+  copy /y "build\Release\BodyHairSliders.dll" "package\SKSE\Plugins\BodyHairSliders.dll" >nul
+) else if exist "build\BodyHairSliders.dll" (
+  copy /y "build\BodyHairSliders.dll" "package\SKSE\Plugins\BodyHairSliders.dll" >nul
+) else (
   echo [ERROR] BodyHairSliders.dll was not found after build.
   exit /b 1
 )
