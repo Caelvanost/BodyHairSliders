@@ -21,26 +21,64 @@ Only categories supplied by installed/configured providers need to be shown.
 
 ## Provider model
 
-BodyHairSliders is intended to act as a frontend and renderer, while supported body-hair mods remain asset providers.
+BodyHairSliders acts as a frontend and renderer while supported body-hair mods remain optional asset providers. Providers are configured in `config.json` and may expose explicit styles or directory scan rules.
+
+The scanner now discovers compatible `.dds` files at runtime, which avoids hard-coding every individual style and makes updates to supported packs easier to absorb.
 
 Initial target providers:
 
 - Nordic Warmaiden Body Hair
 - HIMBO V3 Bodyhair Overlays for Racemenu
-- Pubes Forever
-- OPubes
+- Pubic Hairstyles All In One CBBE / Pubes Forever female assets
+- Pubes Forever for Males
+- OPubes NG compatibility
 
-Providers are represented in `config.json`. A style declares its provider, region, display label, rendering type and texture path. This keeps asset mappings out of the C++ code and makes additional packs easy to add later.
+## Confirmed archive inventory
 
-The provider mods should remain optional: users should not need to install all supported packs at once.
+### Nordic Warmaiden Body Hair
+
+The supplied archive contains RaceMenu/body-paint assets in:
+
+```text
+Data/Textures/Actors/Nordic Warmaiden Hair/
+```
+
+Confirmed body-hair groups include:
+
+- `dePog - Pubes - ...` → pubic
+- `dePog - Pits - ...` → armpits
+- `dePog - Navel - ...` → stomach
+- `dePog - Crack - ...` → butt / intergluteal hair
+- `dePog - Beast - ...` → back
+
+Most styles have paired `Dark_` and `Fair_` textures. BodyHairSliders merges those pairs into one logical slider entry and retains both source textures for later color handling.
+
+### Pubes Forever for Males
+
+The supplied archive contains 20 pubic-hair overlays under:
+
+```text
+Data/textures/actors/character/ak_rm_pubic_hair_all_in_one/
+```
+
+Male textures end in `M.dds`. The scanner filters these separately from the female versions.
+
+### OPubes NG
+
+OPubes NG itself primarily supplies scripts/configuration rather than the pubic-hair textures. Its included compatibility JSON confirms the expected Pubes Forever female and male texture paths. BodyHairSliders therefore treats OPubes as a compatibility/integration provider rather than as an asset pack.
+
+### HIMBO and Pubic Hairstyles All In One CBBE
+
+Their supplied archives are `.7z`. Their exact internal paths still need to be confirmed in an environment with 7z extraction support before scan rules are committed for those packs.
 
 ## Design goals
 
 - Do **not** redistribute third-party body-hair assets without permission.
 - Treat supported body-hair mods as external/optional providers.
 - Use dedicated RaceMenu/NiOverride overlay keys so unrelated body paints are not overwritten.
-- Keep style mappings in JSON instead of hard-coding texture paths.
+- Discover provider styles dynamically where practical instead of hard-coding huge inventories.
 - Support arbitrary body regions rather than a fixed pubic/armpit/butt list.
+- Keep male and female provider styles distinct.
 - Keep selection state separate from rendering so it can later be synchronized by MorphSyncTogether.
 - Allow future support for non-overlay providers, such as 3D mesh-based pubic hair, without forcing them through the overlay backend.
 
@@ -52,6 +90,9 @@ The current draft provides:
 - `BodyHairSliders.dll` project identity.
 - DataLoaded initialization and logging to `BodyHairSliders.log`.
 - Generic provider-based JSON config loader.
+- Runtime directory-based asset discovery.
+- Dark/Fair pairing for Nordic Warmaiden styles.
+- Male/female filtering for Pubes Forever-style assets.
 - Region-based style lookup.
 - Hair-color extraction from the actor's base hair color.
 - A preset hair-color palette.
@@ -61,9 +102,7 @@ The current draft provides:
 
 ### Not implemented yet
 
-The actual SKEE/RaceMenu overlay calls and Body-category slider registration are intentionally **TODO** in this draft.
-
-The exact texture paths and style inventories for the supported providers also still need to be mapped from their real archives. Placeholder Nordic Warmaiden paths remain in the config until that archive is inspected; HIMBO, Pubes Forever and OPubes are currently registered as empty providers.
+The actual SKEE/RaceMenu overlay calls and Body-category slider registration are still TODO. The next implementation milestone is to render a selected discovered style on the player and then expose the dynamic selector through RaceMenu.
 
 ## Requirements
 
@@ -107,11 +146,10 @@ Data/SKSE/Plugins/BodyHairSliders/config.json
 
 ## Next development steps
 
-1. Inventory the real Nordic Warmaiden, HIMBO, Pubes Forever and OPubes assets.
-2. Fill the provider config with exact texture/mesh paths and region mappings.
-3. Add provider availability detection.
-4. Wire the SKEE/NiOverride body-overlay API.
-5. Register dynamic controls in RaceMenu > Body.
-6. Persist selected values and reapply on appearance/NiNode refresh.
-7. Test coexistence with existing RaceMenu Body Paints and Skyrim Together.
-8. Expose a stable selection state that MorphSyncTogether can synchronize later.
+1. Confirm the internal paths of the HIMBO and CBBE `.7z` archives and add their scan rules.
+2. Wire the SKEE/NiOverride body-overlay API.
+3. Render and recolor one discovered overlay as an end-to-end proof.
+4. Register dynamic controls in RaceMenu > Body.
+5. Persist selected values and reapply on appearance/NiNode refresh.
+6. Test coexistence with existing RaceMenu Body Paints and Skyrim Together.
+7. Expose a stable selection state that MorphSyncTogether can synchronize later.
