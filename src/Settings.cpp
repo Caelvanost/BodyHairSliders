@@ -69,6 +69,16 @@ namespace BHS
             providers.clear();
             matchHairByDefault = root.value("matchHairByDefault", true);
 
+            if (root.contains("proofOfConcept") && root.at("proofOfConcept").is_object()) {
+                const auto& poc = root.at("proofOfConcept");
+                proofOfConceptEnabled = poc.value("enabled", false);
+                proofOfConceptRegion = poc.value("region", "pubic");
+                proofOfConceptSex = poc.value("sex", "female");
+                proofOfConceptStyleIndex = poc.value("styleIndex", std::size_t{ 0 });
+            } else {
+                proofOfConceptEnabled = false;
+            }
+
             if (root.contains("providers") && root.at("providers").is_array()) {
                 for (const auto& providerEntry : root.at("providers")) {
                     Provider provider;
@@ -118,8 +128,8 @@ namespace BHS
                 detectedCount += provider.detected ? 1 : 0;
             }
 
-            SKSE::log::info("Loaded {} providers ({} detected) with {} body-hair styles",
-                providers.size(), detectedCount, styleCount);
+            SKSE::log::info("Loaded {} providers ({} detected) with {} body-hair styles; PoC enabled={}",
+                providers.size(), detectedCount, styleCount, proofOfConceptEnabled);
             return true;
         } catch (const std::exception& e) {
             SKSE::log::error("Failed to parse config.json: {}", e.what());
