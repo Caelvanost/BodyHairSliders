@@ -100,6 +100,7 @@ namespace BHS
                             rule.sex = ruleEntry.value("sex", "any");
                             rule.prefix = ruleEntry.value("prefix", "");
                             rule.suffix = ruleEntry.value("suffix", ".dds");
+                            rule.excludeSuffix = ruleEntry.value("excludeSuffix", "");
                             rule.pairDarkFair = ruleEntry.value("pairDarkFair", false);
                             provider.scanRules.push_back(std::move(rule));
                         }
@@ -150,6 +151,9 @@ namespace BHS
 
                 const auto filename = entry.path().filename().string();
                 if (!EndsWithInsensitive(filename, rule.suffix)) {
+                    continue;
+                }
+                if (!rule.excludeSuffix.empty() && EndsWithInsensitive(filename, rule.excludeSuffix)) {
                     continue;
                 }
                 if (!rule.prefix.empty() && !filename.starts_with(rule.prefix)) {
