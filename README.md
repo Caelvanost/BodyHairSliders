@@ -23,7 +23,7 @@ Only categories supplied by installed/configured providers need to be shown.
 
 BodyHairSliders acts as a frontend and renderer while supported body-hair mods remain optional asset providers. Providers are configured in `config.json` and may expose explicit styles or directory scan rules.
 
-The scanner now discovers compatible `.dds` files at runtime, which avoids hard-coding every individual style and makes updates to supported packs easier to absorb.
+The scanner discovers compatible `.dds` files at runtime, avoiding hard-coded style inventories and making supported pack updates easier to absorb.
 
 Initial target providers:
 
@@ -53,23 +53,43 @@ Confirmed body-hair groups include:
 
 Most styles have paired `Dark_` and `Fair_` textures. BodyHairSliders merges those pairs into one logical slider entry and retains both source textures for later color handling.
 
-### Pubes Forever for Males
+### Pubic Hairstyles All In One CBBE / Pubes Forever female
 
-The supplied archive contains 20 pubic-hair overlays under:
+The supplied archive contains 20 female pubic-hair overlays under:
 
 ```text
 Data/textures/actors/character/ak_rm_pubic_hair_all_in_one/
 ```
 
-Male textures end in `M.dds`. The scanner filters these separately from the female versions.
+The original RaceMenu script registers `AK_01_Trimmed01` through `AK_20_Superhairy05`. BodyHairSliders scans these files dynamically.
+
+### Pubes Forever for Males
+
+The supplied archive uses the same directory as the female pack. Male textures end in `M.dds`; BodyHairSliders filters these into a separate male provider so they do not appear in the female selector.
+
+### HIMBO V3 Bodyhair Overlays for Racemenu
+
+The supplied archive registers body paints from:
+
+```text
+Data/Textures/actors/character/character assets/overlays/
+```
+
+Confirmed body-region overlays are:
+
+- Arms: Light / Medium / Heavy
+- Armpit
+- Ass: Light / Medium / Heavy
+- Back: Light / Medium / Heavy
+- Belly: Light / Medium / Heavy
+- Chest: Light / Medium / Heavy
+- Legs: Light / Medium / Heavy
+
+The archive also contains separate **Hand Paint** textures (`HIMBO_BodyHair_HandsArm*.dds`) and a **Feet Paint** texture (`HIMBO_BodyHair_BodyFeet.dds`). Those are intentionally not mapped into the Body overlay backend yet because RaceMenu handles hand and feet paints through separate APIs.
 
 ### OPubes NG
 
-OPubes NG itself primarily supplies scripts/configuration rather than the pubic-hair textures. Its included compatibility JSON confirms the expected Pubes Forever female and male texture paths. BodyHairSliders therefore treats OPubes as a compatibility/integration provider rather than as an asset pack.
-
-### HIMBO and Pubic Hairstyles All In One CBBE
-
-Their supplied archives are `.7z`. Their exact internal paths still need to be confirmed in an environment with 7z extraction support before scan rules are committed for those packs.
+OPubes NG primarily supplies scripts/configuration rather than the pubic-hair textures. Its included compatibility data confirms the expected Pubes Forever texture layout. BodyHairSliders therefore treats OPubes as a compatibility/integration provider rather than as an asset pack.
 
 ## Design goals
 
@@ -91,6 +111,7 @@ The current draft provides:
 - DataLoaded initialization and logging to `BodyHairSliders.log`.
 - Generic provider-based JSON config loader.
 - Runtime directory-based asset discovery.
+- Confirmed scan rules for Nordic Warmaiden, HIMBO, female CBBE pubic styles and Pubes Forever male.
 - Dark/Fair pairing for Nordic Warmaiden styles.
 - Male/female filtering for Pubes Forever-style assets.
 - Region-based style lookup.
@@ -146,10 +167,10 @@ Data/SKSE/Plugins/BodyHairSliders/config.json
 
 ## Next development steps
 
-1. Confirm the internal paths of the HIMBO and CBBE `.7z` archives and add their scan rules.
-2. Wire the SKEE/NiOverride body-overlay API.
-3. Render and recolor one discovered overlay as an end-to-end proof.
-4. Register dynamic controls in RaceMenu > Body.
-5. Persist selected values and reapply on appearance/NiNode refresh.
+1. Wire the SKEE/NiOverride body-overlay API.
+2. Render and recolor one discovered overlay as an end-to-end proof.
+3. Register dynamic controls in RaceMenu > Body.
+4. Persist selected values and reapply on appearance/NiNode refresh.
+5. Add optional Hand Paint / Feet Paint support for HIMBO if desired.
 6. Test coexistence with existing RaceMenu Body Paints and Skyrim Together.
 7. Expose a stable selection state that MorphSyncTogether can synchronize later.
