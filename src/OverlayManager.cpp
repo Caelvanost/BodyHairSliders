@@ -5,6 +5,8 @@ namespace BHS
 {
     namespace
     {
+        constexpr SKEE::u8 kUnindexedProperty = 0xFF;
+
         class StringVariant final : public SKEE::IOverrideInterface::SetVariant
         {
         public:
@@ -157,8 +159,8 @@ namespace BHS
         FloatVariant alphaValue(std::clamp(color.a, 0.0F, 1.0F));
 
         overrideInterface->AddNodeOverride(actor, isFemale, nodeName.c_str(), SKEE::kShaderTexture, 0, textureValue);
-        overrideInterface->AddNodeOverride(actor, isFemale, nodeName.c_str(), SKEE::kShaderTintColor, 0, tintValue);
-        overrideInterface->AddNodeOverride(actor, isFemale, nodeName.c_str(), SKEE::kShaderAlpha, 0, alphaValue);
+        overrideInterface->AddNodeOverride(actor, isFemale, nodeName.c_str(), SKEE::kShaderTintColor, kUnindexedProperty, tintValue);
+        overrideInterface->AddNodeOverride(actor, isFemale, nodeName.c_str(), SKEE::kShaderAlpha, kUnindexedProperty, alphaValue);
         overrideInterface->SetNodeProperties(actor, true);
 
         if (auto* update = integration.ActorUpdate()) {
@@ -202,8 +204,8 @@ namespace BHS
         // Remove for both sexes so a character sex/style change cannot leave stale data.
         for (bool female : { false, true }) {
             overrideInterface->RemoveNodeOverride(actor, female, nodeName.c_str(), SKEE::kShaderTexture, 0);
-            overrideInterface->RemoveNodeOverride(actor, female, nodeName.c_str(), SKEE::kShaderTintColor, 0);
-            overrideInterface->RemoveNodeOverride(actor, female, nodeName.c_str(), SKEE::kShaderAlpha, 0);
+            overrideInterface->RemoveNodeOverride(actor, female, nodeName.c_str(), SKEE::kShaderTintColor, kUnindexedProperty);
+            overrideInterface->RemoveNodeOverride(actor, female, nodeName.c_str(), SKEE::kShaderAlpha, kUnindexedProperty);
         }
         overrideInterface->SetNodeProperties(actor, true);
         actorIt->second.erase(slotIt);
