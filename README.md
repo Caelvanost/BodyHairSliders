@@ -1,39 +1,69 @@
-# NordicBodyHairSliders
+# BodyHairSliders
 
-Early development draft of a Skyrim SE/AE SKSE plugin that aims to expose **Nordic Warmaiden Body Hair** choices as convenient controls in **RaceMenu > Body**.
+Early development draft of a Skyrim SE/AE SKSE plugin that aims to expose body-hair assets from multiple compatible mods as convenient controls in **RaceMenu > Body**.
 
 ## Target UX
 
-- Body Hair - Pubic
-- Body Hair - Armpits
-- Body Hair - Butt
-- Body Hair - Color
+Planned controls include:
+
+- Pubic Hair
+- Armpit Hair
+- Chest Hair
+- Stomach Hair
+- Back Hair
+- Arm Hair
+- Leg Hair
+- Butt Hair
+- Body Hair Color
 - `Match Hair` as the default color mode
+
+Only categories supplied by installed/configured providers need to be shown.
+
+## Provider model
+
+BodyHairSliders is intended to act as a frontend and renderer, while supported body-hair mods remain asset providers.
+
+Initial target providers:
+
+- Nordic Warmaiden Body Hair
+- HIMBO V3 Bodyhair Overlays for Racemenu
+- Pubes Forever
+- OPubes
+
+Providers are represented in `config.json`. A style declares its provider, region, display label, rendering type and texture path. This keeps asset mappings out of the C++ code and makes additional packs easy to add later.
+
+The provider mods should remain optional: users should not need to install all supported packs at once.
 
 ## Design goals
 
-- Do **not** redistribute Nordic Warmaiden Body Hair textures.
-- Treat Nordic Warmaiden Body Hair as an external dependency.
+- Do **not** redistribute third-party body-hair assets without permission.
+- Treat supported body-hair mods as external/optional providers.
 - Use dedicated RaceMenu/NiOverride overlay keys so unrelated body paints are not overwritten.
 - Keep style mappings in JSON instead of hard-coding texture paths.
+- Support arbitrary body regions rather than a fixed pubic/armpit/butt list.
 - Keep selection state separate from rendering so it can later be synchronized by MorphSyncTogether.
+- Allow future support for non-overlay providers, such as 3D mesh-based pubic hair, without forcing them through the overlay backend.
 
 ## Current state: v0.1 draft
 
-This first draft provides:
+The current draft provides:
 
 - CommonLibSSE-NG plugin skeleton.
-- DataLoaded initialization and logging.
-- JSON config loader.
+- `BodyHairSliders.dll` project identity.
+- DataLoaded initialization and logging to `BodyHairSliders.log`.
+- Generic provider-based JSON config loader.
+- Region-based style lookup.
 - Hair-color extraction from the actor's base hair color.
 - A preset hair-color palette.
-- Overlay manager API.
+- Generic overlay manager API.
 - RaceMenu integration boundary.
 - Vortex-style `package/` directory and `build_release.bat` creating the ZIP under `dist/`.
 
 ### Not implemented yet
 
-The actual SKEE/RaceMenu overlay calls and Body-category slider registration are intentionally **TODO** in this draft. We first need the real Nordic Warmaiden archive/file layout and the exact RaceMenu/SKEE interface we will target; placeholder texture paths are marked `TODO/...` in `config.json`.
+The actual SKEE/RaceMenu overlay calls and Body-category slider registration are intentionally **TODO** in this draft.
+
+The exact texture paths and style inventories for the supported providers also still need to be mapped from their real archives. Placeholder Nordic Warmaiden paths remain in the config until that archive is inspected; HIMBO, Pubes Forever and OPubes are currently registered as empty providers.
 
 ## Requirements
 
@@ -49,7 +79,7 @@ Runtime target:
 - SKSE64
 - Address Library for SKSE Plugins
 - RaceMenu
-- Nordic Warmaiden Body Hair
+- One or more supported body-hair asset providers
 
 ## Build
 
@@ -60,19 +90,28 @@ build_release.bat
 The script builds the DLL, copies it into:
 
 ```text
-package/SKSE/Plugins/NordicBodyHairSliders.dll
+package/SKSE/Plugins/BodyHairSliders.dll
 ```
 
 and creates:
 
 ```text
-dist/NordicBodyHairSliders-v0.1.0.zip
+dist/BodyHairSliders-v0.1.0.zip
 ```
 
-## Next development step
+The runtime configuration is installed at:
 
-1. Inspect the Nordic Warmaiden archive and replace `TODO/...` texture paths with the real paths.
-2. Wire the SKEE/NiOverride body-overlay API.
-3. Register the four controls in RaceMenu > Body.
-4. Persist selected values and reapply on appearance/NiNode refresh.
-5. Test coexistence with existing RaceMenu Body Paints and Skyrim Together.
+```text
+Data/SKSE/Plugins/BodyHairSliders/config.json
+```
+
+## Next development steps
+
+1. Inventory the real Nordic Warmaiden, HIMBO, Pubes Forever and OPubes assets.
+2. Fill the provider config with exact texture/mesh paths and region mappings.
+3. Add provider availability detection.
+4. Wire the SKEE/NiOverride body-overlay API.
+5. Register dynamic controls in RaceMenu > Body.
+6. Persist selected values and reapply on appearance/NiNode refresh.
+7. Test coexistence with existing RaceMenu Body Paints and Skyrim Together.
+8. Expose a stable selection state that MorphSyncTogether can synchronize later.
