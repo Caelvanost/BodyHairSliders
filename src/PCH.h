@@ -4,6 +4,7 @@
 #include "SKSE/SKSE.h"
 
 #include <nlohmann/json.hpp>
+#include <spdlog/sinks/basic_file_sink.h>
 
 #include <algorithm>
 #include <array>
@@ -16,3 +17,5 @@
 #include <string_view>
 #include <unordered_map>
 #include <vector>
+
+using namespace std::literals;
