@@ -1,6 +1,6 @@
 # BodyHairSliders
 
-Early development draft of a Skyrim SE/AE SKSE plugin that aims to expose body-hair assets from multiple compatible mods as convenient controls in **RaceMenu > Body**.
+Early development draft of a Skyrim SE/AE SKSE plugin that exposes body-hair assets from multiple compatible mods through a unified RaceMenu-oriented frontend.
 
 ## Target UX
 
@@ -37,21 +37,21 @@ Initial target providers:
 
 ### Nordic Warmaiden Body Hair
 
-The supplied archive contains RaceMenu/body-paint assets in:
+Assets are scanned from:
 
 ```text
 Data/Textures/Actors/Nordic Warmaiden Hair/
 ```
 
-Confirmed body-hair groups include:
+Confirmed groups:
 
 - `dePog - Pubes - ...` → pubic
 - `dePog - Pits - ...` → armpits
 - `dePog - Navel - ...` → stomach
-- `dePog - Crack - ...` → butt / intergluteal hair
+- `dePog - Crack - ...` → butt
 - `dePog - Beast - ...` → back
 
-Most styles have paired `Dark_` and `Fair_` textures. BodyHairSliders merges those pairs into one logical slider entry and retains both source textures for later color handling.
+Paired `Dark_` and `Fair_` textures are merged into one logical style. The renderer chooses the appropriate source texture and applies the requested tint.
 
 ### Pubic Hairstyles All In One CBBE / Pubes Forever female
 
@@ -61,21 +61,19 @@ The supplied archive contains 20 female pubic-hair overlays under:
 Data/textures/actors/character/ak_rm_pubic_hair_all_in_one/
 ```
 
-The original RaceMenu script registers `AK_01_Trimmed01` through `AK_20_Superhairy05`. BodyHairSliders scans these files dynamically.
-
 ### Pubes Forever for Males
 
-The supplied archive uses the same directory as the female pack. Male textures end in `M.dds`; BodyHairSliders filters these into a separate male provider so they do not appear in the female selector.
+Male textures use the same directory and end in `M.dds`. They are filtered into a separate male provider.
 
 ### HIMBO V3 Bodyhair Overlays for Racemenu
 
-The supplied archive registers body paints from:
+Body paints are scanned from:
 
 ```text
 Data/Textures/actors/character/character assets/overlays/
 ```
 
-Confirmed body-region overlays are:
+Confirmed Body regions:
 
 - Arms: Light / Medium / Heavy
 - Armpit
@@ -85,45 +83,102 @@ Confirmed body-region overlays are:
 - Chest: Light / Medium / Heavy
 - Legs: Light / Medium / Heavy
 
-The archive also contains separate **Hand Paint** textures (`HIMBO_BodyHair_HandsArm*.dds`) and a **Feet Paint** texture (`HIMBO_BodyHair_BodyFeet.dds`). Those are intentionally not mapped into the Body overlay backend yet because RaceMenu handles hand and feet paints through separate APIs.
+Separate Hand Paint and Feet Paint assets exist but are not yet routed through those RaceMenu locations.
 
 ### OPubes NG
 
-OPubes NG primarily supplies scripts/configuration rather than the pubic-hair textures. Its included compatibility data confirms the expected Pubes Forever texture layout. BodyHairSliders therefore treats OPubes as a compatibility/integration provider rather than as an asset pack.
+OPubes NG primarily supplies scripts/configuration and compatibility data rather than the underlying 2D textures, so it is treated as an integration bridge.
+
+## SKEE / NiOverride integration
+
+BodyHairSliders now acquires RaceMenu's public SKEE interfaces through the SKSE interface-exchange message instead of linking against RaceMenu internals.
+
+The runtime uses:
+
+- `Overlay` to discover the configured Body overlay count and node format.
+- `Override` to set the overlay diffuse texture, tint color and alpha.
+- `ActorUpdateManager` to rebuild overlays and node overrides.
+
+A Body slot is selected from the highest available RaceMenu slot downward. A slot with an existing texture override is treated as occupied so BodyHairSliders does not intentionally overwrite an existing Body Paint.
+
+SKEE shader-property indices used by the renderer are:
+
+- texture key `9`, texture index `0`
+- tint key `7`, unindexed sentinel `255`
+- alpha key `8`, unindexed sentinel `255`
+
+## Proof-of-concept test
+
+The package contains an opt-in end-to-end test in:
+
+```text
+Data/SKSE/Plugins/BodyHairSliders/config.json
+```
+
+It is disabled by default:
+
+```json
+"proofOfConcept": {
+  "enabled": false,
+  "region": "pubic",
+  "sex": "female",
+  "styleIndex": 0
+}
+```
+
+For a test build, set `enabled` to `true`. After loading a save, BodyHairSliders will:
+
+1. find the installed styles matching `region` and `sex`;
+2. select `styleIndex`;
+3. read the player's hair color;
+4. reserve a free RaceMenu Body overlay slot;
+5. apply the texture, hair-color tint and alpha;
+6. request a SKEE overlay/node refresh.
+
+The log is written to:
+
+```text
+Documents/My Games/Skyrim Special Edition/SKSE/BodyHairSliders.log
+```
+
+Useful success entries include `SKEE acquired`, `Reserved RaceMenu body overlay slot`, and `Applied provider=...`.
+
+If the log reports no free Body overlay slot, increase RaceMenu's `[Overlays/Body] iNumOverlays` in `skee64.ini` or `skee64_custom.ini`.
 
 ## Design goals
 
 - Do **not** redistribute third-party body-hair assets without permission.
-- Treat supported body-hair mods as external/optional providers.
-- Use dedicated RaceMenu/NiOverride overlay keys so unrelated body paints are not overwritten.
-- Discover provider styles dynamically where practical instead of hard-coding huge inventories.
+- Treat supported packs as external/optional providers.
+- Avoid intentionally overwriting unrelated RaceMenu Body Paints.
+- Discover provider styles dynamically where practical.
 - Support arbitrary body regions rather than a fixed pubic/armpit/butt list.
-- Keep male and female provider styles distinct.
-- Keep selection state separate from rendering so it can later be synchronized by MorphSyncTogether.
-- Allow future support for non-overlay providers, such as 3D mesh-based pubic hair, without forcing them through the overlay backend.
+- Keep male and female styles distinct.
+- Keep selection state separate from rendering so MorphSyncTogether can synchronize it later.
+- Leave room for non-overlay providers such as 3D pubic-hair meshes.
 
 ## Current state: v0.1 draft
 
-The current draft provides:
+Implemented:
 
 - CommonLibSSE-NG plugin skeleton.
-- `BodyHairSliders.dll` project identity.
-- DataLoaded initialization and logging to `BodyHairSliders.log`.
-- Generic provider-based JSON config loader.
-- Runtime directory-based asset discovery.
-- Confirmed scan rules for Nordic Warmaiden, HIMBO, female CBBE pubic styles and Pubes Forever male.
-- Dark/Fair pairing for Nordic Warmaiden styles.
-- Male/female filtering for Pubes Forever-style assets.
-- Region-based style lookup.
-- Hair-color extraction from the actor's base hair color.
-- A preset hair-color palette.
-- Generic overlay manager API.
-- RaceMenu integration boundary.
-- Vortex-style `package/` directory and `build_release.bat` creating the ZIP under `dist/`.
+- Generic provider-based JSON config and runtime asset discovery.
+- Confirmed provider scan rules for Nordic Warmaiden, HIMBO, female CBBE pubic styles and Pubes Forever male.
+- Dark/Fair pairing and male/female filtering.
+- Hair-color extraction and color presets.
+- Dynamic SKEE interface acquisition.
+- Free Body-overlay slot reservation.
+- Texture/tint/alpha node overrides.
+- SKEE overlay refresh.
+- Disabled-by-default end-to-end player PoC.
+- Vortex-style `package/` and `dist/` packaging.
 
-### Not implemented yet
+Still to implement after the PoC is validated in game:
 
-The actual SKEE/RaceMenu overlay calls and Body-category slider registration are still TODO. The next implementation milestone is to render a selected discovered style on the player and then expose the dynamic selector through RaceMenu.
+- actual custom selectors/sliders in `RaceMenu > Body`;
+- persistent BodyHairSliders selection state;
+- automatic reapplication after relevant appearance/NiNode refreshes;
+- optional HIMBO Hand/Feet support;
+- MorphSyncTogether synchronization API.
 
 ## Requirements
 
@@ -134,12 +189,12 @@ Development/build:
 - vcpkg (`VCPKG_ROOT` environment variable)
 - CommonLibSSE-NG
 
-Runtime target:
+Runtime:
 
 - SKSE64
 - Address Library for SKSE Plugins
-- RaceMenu
-- One or more supported body-hair asset providers
+- RaceMenu / SKEE
+- one or more supported body-hair providers
 
 ## Build
 
@@ -147,30 +202,24 @@ Runtime target:
 build_release.bat
 ```
 
-The script builds the DLL, copies it into:
+Output DLL:
 
 ```text
 package/SKSE/Plugins/BodyHairSliders.dll
 ```
 
-and creates:
+Vortex archive:
 
 ```text
 dist/BodyHairSliders-v0.1.0.zip
 ```
 
-The runtime configuration is installed at:
-
-```text
-Data/SKSE/Plugins/BodyHairSliders/config.json
-```
-
 ## Next development steps
 
-1. Wire the SKEE/NiOverride body-overlay API.
-2. Render and recolor one discovered overlay as an end-to-end proof.
-3. Register dynamic controls in RaceMenu > Body.
-4. Persist selected values and reapply on appearance/NiNode refresh.
-5. Add optional Hand Paint / Feet Paint support for HIMBO if desired.
-6. Test coexistence with existing RaceMenu Body Paints and Skyrim Together.
-7. Expose a stable selection state that MorphSyncTogether can synchronize later.
+1. Compile against the user's current CommonLibSSE-NG/vcpkg environment.
+2. Run the disabled-by-default PoC with one known provider and inspect `BodyHairSliders.log`.
+3. Correct any ABI/runtime differences exposed by the installed RaceMenu build.
+4. Register dynamic controls in `RaceMenu > Body`.
+5. Persist selections and reapply after appearance/NiNode refreshes.
+6. Test coexistence with existing Body Paints, OStim and Skyrim Together.
+7. Expose stable state for MorphSyncTogether synchronization.
