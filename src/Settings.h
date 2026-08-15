@@ -22,6 +22,7 @@ namespace BHS
         std::string sex{ "any" };
         std::string prefix;
         std::string suffix{ ".dds" };
+        std::string excludeSuffix;
         bool pairDarkFair{ false };
     };
 
