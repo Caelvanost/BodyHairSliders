@@ -224,7 +224,7 @@ namespace BHS
         }
 
         if (!provider.plugin.empty()) {
-            if (const auto* handler = RE::TESDataHandler::GetSingleton(); handler && handler->LookupModByName(provider.plugin)) {
+            if (auto* handler = RE::TESDataHandler::GetSingleton(); handler && handler->LookupModByName(provider.plugin)) {
                 provider.detected = true;
             }
         }
