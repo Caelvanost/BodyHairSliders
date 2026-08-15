@@ -6,82 +6,42 @@
       "name": "Nordic Warmaiden Body Hair",
       "plugin": "Nordic Warmaiden Body Hair.esp",
       "scanRules": [
-        {
-          "directory": "Data/Textures/Actors/Nordic Warmaiden Hair",
-          "region": "pubic",
-          "sex": "female",
-          "prefix": "dePog - Pubes - ",
-          "suffix": ".dds",
-          "pairDarkFair": true
-        },
-        {
-          "directory": "Data/Textures/Actors/Nordic Warmaiden Hair",
-          "region": "armpits",
-          "sex": "female",
-          "prefix": "dePog - Pits - ",
-          "suffix": ".dds",
-          "pairDarkFair": true
-        },
-        {
-          "directory": "Data/Textures/Actors/Nordic Warmaiden Hair",
-          "region": "stomach",
-          "sex": "female",
-          "prefix": "dePog - Navel - ",
-          "suffix": ".dds",
-          "pairDarkFair": true
-        },
-        {
-          "directory": "Data/Textures/Actors/Nordic Warmaiden Hair",
-          "region": "butt",
-          "sex": "female",
-          "prefix": "dePog - Crack - ",
-          "suffix": ".dds",
-          "pairDarkFair": true
-        },
-        {
-          "directory": "Data/Textures/Actors/Nordic Warmaiden Hair",
-          "region": "back",
-          "sex": "female",
-          "prefix": "dePog - Beast - ",
-          "suffix": ".dds",
-          "pairDarkFair": true
-        }
+        { "directory": "Data/Textures/Actors/Nordic Warmaiden Hair", "region": "pubic", "sex": "female", "prefix": "dePog - Pubes - ", "suffix": ".dds", "pairDarkFair": true },
+        { "directory": "Data/Textures/Actors/Nordic Warmaiden Hair", "region": "armpits", "sex": "female", "prefix": "dePog - Pits - ", "suffix": ".dds", "pairDarkFair": true },
+        { "directory": "Data/Textures/Actors/Nordic Warmaiden Hair", "region": "stomach", "sex": "female", "prefix": "dePog - Navel - ", "suffix": ".dds", "pairDarkFair": true },
+        { "directory": "Data/Textures/Actors/Nordic Warmaiden Hair", "region": "butt", "sex": "female", "prefix": "dePog - Crack - ", "suffix": ".dds", "pairDarkFair": true },
+        { "directory": "Data/Textures/Actors/Nordic Warmaiden Hair", "region": "back", "sex": "female", "prefix": "dePog - Beast - ", "suffix": ".dds", "pairDarkFair": true }
       ]
     },
     {
       "id": "pubic_hairstyles_cbbe",
-      "name": "Pubic Hairstyles / Pubes Forever (Female)",
-      "plugin": "",
+      "name": "Pubic Hairstyles All In One CBBE / Pubes Forever Female",
+      "plugin": "AK_RM_PubicStyles_All_In_One.esp",
       "scanRules": [
-        {
-          "directory": "Data/textures/actors/character/ak_rm_pubic_hair_all_in_one",
-          "region": "pubic",
-          "sex": "female",
-          "prefix": "ak_",
-          "suffix": ".dds",
-          "excludeSuffix": "M.dds"
-        }
+        { "directory": "Data/textures/actors/character/ak_rm_pubic_hair_all_in_one", "region": "pubic", "sex": "female", "prefix": "ak_", "suffix": ".dds", "excludeSuffix": "M.dds" }
       ]
     },
     {
       "id": "pubes_forever_male",
-      "name": "Pubes Forever (Male)",
+      "name": "Pubes Forever Male",
       "plugin": "AK_RM_PubicStyles_All_In_One_M.esp",
       "scanRules": [
-        {
-          "directory": "Data/textures/actors/character/ak_rm_pubic_hair_all_in_one",
-          "region": "pubic",
-          "sex": "male",
-          "prefix": "ak_",
-          "suffix": "M.dds"
-        }
+        { "directory": "Data/textures/actors/character/ak_rm_pubic_hair_all_in_one", "region": "pubic", "sex": "male", "prefix": "ak_", "suffix": "M.dds" }
       ]
     },
     {
       "id": "himbo_bodyhair",
       "name": "HIMBO V3 Bodyhair Overlays for Racemenu",
-      "plugin": "",
-      "scanRules": []
+      "plugin": "HIMBOBodyhairOverlay.esp",
+      "scanRules": [
+        { "directory": "Data/Textures/actors/character/character assets/overlays", "region": "arms", "sex": "male", "prefix": "HIMBO_BodyHair_Arm", "suffix": ".dds" },
+        { "directory": "Data/Textures/actors/character/character assets/overlays", "region": "armpits", "sex": "male", "prefix": "HIMBO_BodyHair_Armpit", "suffix": ".dds" },
+        { "directory": "Data/Textures/actors/character/character assets/overlays", "region": "butt", "sex": "male", "prefix": "HIMBO_BodyHair_Ass", "suffix": ".dds" },
+        { "directory": "Data/Textures/actors/character/character assets/overlays", "region": "back", "sex": "male", "prefix": "HIMBO_BodyHair_Back", "suffix": ".dds" },
+        { "directory": "Data/Textures/actors/character/character assets/overlays", "region": "stomach", "sex": "male", "prefix": "HIMBO_BodyHair_Belly", "suffix": ".dds" },
+        { "directory": "Data/Textures/actors/character/character assets/overlays", "region": "chest", "sex": "male", "prefix": "HIMBO_BodyHair_Chest", "suffix": ".dds" },
+        { "directory": "Data/Textures/actors/character/character assets/overlays", "region": "legs", "sex": "male", "prefix": "HIMBO_BodyHair_Legs", "suffix": ".dds" }
+      ]
     },
     {
       "id": "opubes",
