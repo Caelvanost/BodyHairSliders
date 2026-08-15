@@ -9,10 +9,12 @@ namespace BHS
     public:
         static OverlayManager& GetSingleton();
 
-        // Draft API. The RaceMenu/SKEE bridge will be wired into these methods
-        // once the exact interface and provider asset paths are confirmed.
         bool Apply(RE::Actor* actor, const OverlayStyle* style, const RGBA& color);
         bool Clear(RE::Actor* actor, std::string_view region);
         void Refresh(RE::Actor* actor);
+
+    private:
+        std::optional<std::uint32_t> FindOrReserveBodySlot(RE::Actor* actor, std::string_view region, bool isFemale);
+        std::unordered_map<std::uint32_t, std::unordered_map<std::string, std::uint32_t>> slots_;
     };
 }
