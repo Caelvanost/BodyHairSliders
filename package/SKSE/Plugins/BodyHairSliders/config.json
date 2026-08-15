@@ -1,5 +1,11 @@
 {
   "matchHairByDefault": true,
+  "proofOfConcept": {
+    "enabled": false,
+    "region": "pubic",
+    "sex": "female",
+    "styleIndex": 0
+  },
   "providers": [
     {
       "id": "nordic_warmaiden",
