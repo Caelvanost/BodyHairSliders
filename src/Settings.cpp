@@ -67,7 +67,7 @@ namespace BHS
         for (const auto& provider : providers) {
             for (const auto& style : provider.styles) {
                 if (style.region == region) {
-                    result.push_back(std::addressof(style));
+                    result.push_back(&style);
                 }
             }
         }
