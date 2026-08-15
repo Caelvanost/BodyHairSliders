@@ -1,6 +1,6 @@
 #include "HairColor.h"
 
-namespace NBHS
+namespace BHS
 {
     namespace
     {
