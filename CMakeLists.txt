@@ -13,6 +13,7 @@ add_commonlibsse_plugin(${PROJECT_NAME}
         src/Settings.cpp
         src/HairColor.h
         src/HairColor.cpp
+        src/SKEEInterfaces.h
         src/OverlayManager.h
         src/OverlayManager.cpp
         src/RaceMenuIntegration.h
