@@ -1,6 +1,6 @@
 #include "RaceMenuIntegration.h"
 
-namespace NBHS
+namespace BHS
 {
     RaceMenuIntegration& RaceMenuIntegration::GetSingleton()
     {
