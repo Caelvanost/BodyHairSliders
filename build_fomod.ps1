@@ -25,7 +25,7 @@ foreach ($Path in $RequiredCore) { if (-not (Test-Path -LiteralPath $Path)) { th
 
 $ProviderPackages = @(
     @{ Stage = "10 Nordic Warmaiden"; File = "nordic_warmaiden.json" },
-    @{ Stage = "20 HIMBO"; File = "zz_himbo.json" },
+    @{ Stage = "20 HIMBO"; File = "himbo.json" },
     @{ Stage = "30 Pubes Forever Female"; File = "pubes_forever_female.json" },
     @{ Stage = "40 Pubes Forever Male"; File = "pubes_forever_male.json" },
     @{ Stage = "50 OPubes"; File = "opubes.json" }
@@ -93,7 +93,7 @@ try {
         "00 Core/Scripts/BodyHairSliders.pex",
         "00 Core/Scripts/BodyHairSlidersRaceMenu.pex",
         "10 Nordic Warmaiden/SKSE/Plugins/BodyHairSliders/providers/nordic_warmaiden.json",
-        "20 HIMBO/SKSE/Plugins/BodyHairSliders/providers/zz_himbo.json",
+        "20 HIMBO/SKSE/Plugins/BodyHairSliders/providers/himbo.json",
         "30 Pubes Forever Female/SKSE/Plugins/BodyHairSliders/providers/pubes_forever_female.json",
         "40 Pubes Forever Male/SKSE/Plugins/BodyHairSliders/providers/pubes_forever_male.json",
         "50 OPubes/SKSE/Plugins/BodyHairSliders/providers/opubes.json",
