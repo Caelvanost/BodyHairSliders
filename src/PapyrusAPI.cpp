@@ -14,7 +14,7 @@ namespace BHS::PapyrusAPI
         };
 
         std::unordered_map<std::string, std::int32_t> g_currentSelections;
-        std::int32_t g_currentColorIndex{ 0 };  // 0 = Match Hair, 1..N = preset
+        std::int32_t g_currentColorIndex{ 0 };
         bool g_currentFemale{ false };
 
         std::string ToString(const RE::BSFixedString& value)
@@ -37,7 +37,10 @@ namespace BHS::PapyrusAPI
 
         std::int32_t GetStyleCount(RE::StaticFunctionTag*, RE::BSFixedString region, bool female)
         {
-            const auto styles = Settings::GetSingleton().GetStylesForRegion(ToString(region), SexName(female));
+            const auto regionName = ToString(region);
+            const auto sex = SexName(female);
+            const auto styles = Settings::GetSingleton().GetStylesForRegion(regionName, sex);
+            SKSE::log::info("RaceMenu style query region='{}' sex={} count={}", regionName, sex, styles.size());
             return static_cast<std::int32_t>(styles.size());
         }
 
