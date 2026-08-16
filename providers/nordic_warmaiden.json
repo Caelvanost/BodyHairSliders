@@ -1,0 +1,12 @@
+{
+  "id": "nordic_warmaiden",
+  "name": "Nordic Warmaiden Body Hair",
+  "plugin": "Nordic Warmaiden Body Hair.esp",
+  "scanRules": [
+    { "directory": "Data/Textures/Actors/Nordic Warmaiden Hair", "region": "pubic", "sex": "female", "prefix": "dePog - Pubes - ", "suffix": ".dds", "pairDarkFair": true, "location": "body" },
+    { "directory": "Data/Textures/Actors/Nordic Warmaiden Hair", "region": "armpits", "sex": "female", "prefix": "dePog - Pits - ", "suffix": ".dds", "pairDarkFair": true, "location": "body" },
+    { "directory": "Data/Textures/Actors/Nordic Warmaiden Hair", "region": "stomach", "sex": "female", "prefix": "dePog - Navel - ", "suffix": ".dds", "pairDarkFair": true, "location": "body" },
+    { "directory": "Data/Textures/Actors/Nordic Warmaiden Hair", "region": "butt", "sex": "female", "prefix": "dePog - Crack - ", "suffix": ".dds", "pairDarkFair": true, "location": "body" },
+    { "directory": "Data/Textures/Actors/Nordic Warmaiden Hair", "region": "back", "sex": "female", "prefix": "dePog - Beast - ", "suffix": ".dds", "pairDarkFair": true, "location": "body" }
+  ]
+}
