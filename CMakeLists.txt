@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.21)
 
-project(BodyHairSliders VERSION 0.1.0 LANGUAGES CXX)
+file(READ "${CMAKE_SOURCE_DIR}/VERSION" BHS_VERSION)
+string(STRIP "${BHS_VERSION}" BHS_VERSION)
+project(BodyHairSliders VERSION ${BHS_VERSION} LANGUAGES CXX)
 
 find_package(CommonLibSSE CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
