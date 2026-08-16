@@ -4,6 +4,10 @@
 #include "RaceMenuIntegration.h"
 #include "Settings.h"
 
+#ifndef BHS_VERSION_STRING
+#define BHS_VERSION_STRING "unknown"
+#endif
+
 namespace
 {
     void InitializeLog()
@@ -18,6 +22,23 @@ namespace
         spdlog::set_default_logger(std::move(logger));
         spdlog::set_level(spdlog::level::info);
         spdlog::flush_on(spdlog::level::info);
+    }
+
+    void LogOverlayCapacity()
+    {
+        auto* overlay = BHS::RaceMenuIntegration::GetSingleton().Overlay();
+        if (!overlay) {
+            return;
+        }
+
+        using Type = BHS::SKEE::IOverlayInterface::OverlayType;
+        using Location = BHS::SKEE::IOverlayInterface::OverlayLocation;
+        SKSE::log::info(
+            "RaceMenu normal overlay capacity: body={} hands={} feet={} face={}",
+            overlay->GetOverlayCount(Type::Normal, Location::Body),
+            overlay->GetOverlayCount(Type::Normal, Location::Hand),
+            overlay->GetOverlayCount(Type::Normal, Location::Feet),
+            overlay->GetOverlayCount(Type::Normal, Location::Face));
     }
 
     void RunProofOfConcept()
@@ -61,6 +82,7 @@ namespace
         case SKSE::MessagingInterface::kDataLoaded:
             BHS::Settings::GetSingleton().Load();
             BHS::RaceMenuIntegration::GetSingleton().Initialize();
+            LogOverlayCapacity();
             SKSE::log::info("BodyHairSliders data-loaded initialization complete");
             break;
         case SKSE::MessagingInterface::kPostLoadGame:
@@ -78,7 +100,7 @@ SKSEPluginLoad(const SKSE::LoadInterface* skse)
     InitializeLog();
     SKSE::Init(skse);
 
-    SKSE::log::info("BodyHairSliders v0.1.0 draft loading");
+    SKSE::log::info("BodyHairSliders v{} loading", BHS_VERSION_STRING);
 
     if (const auto papyrus = SKSE::GetPapyrusInterface()) {
         papyrus->Register(BHS::PapyrusAPI::Register);
