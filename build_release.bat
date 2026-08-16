@@ -2,6 +2,16 @@
 setlocal EnableExtensions
 cd /d "%~dp0"
 
+if not exist "VERSION" (
+  echo [ERROR] VERSION file not found.
+  exit /b 1
+)
+set /p BHS_VERSION=<VERSION
+if "%BHS_VERSION%"=="" (
+  echo [ERROR] VERSION file is empty.
+  exit /b 1
+)
+
 if "%VCPKG_ROOT%"=="" (
   echo [ERROR] VCPKG_ROOT is not defined.
   exit /b 1
@@ -21,6 +31,7 @@ set "PAPYRUS_VANILLA=%SKYRIM_DIR%\Data\Source\Scripts"
 set "PAPYRUS_SRC=%CD%\papyrus"
 set "PAPYRUS_STUBS=%CD%\compiler_stubs"
 set "PAPYRUS_OUT=%CD%\package\Scripts"
+set "ZIP_PATH=dist\BodyHairSliders-v%BHS_VERSION%.zip"
 
 if not exist "%PAPYRUS_COMPILER%" (
   echo [ERROR] PapyrusCompiler.exe not found:
@@ -44,6 +55,7 @@ if not exist "package\Scripts" mkdir "package\Scripts"
 if not exist "package\Scripts\Source" mkdir "package\Scripts\Source"
 if not exist "dist" mkdir "dist"
 
+echo Building BodyHairSliders v%BHS_VERSION%
 echo [1/5] Configuring C++...
 cmake -S . -B build ^
   -DCMAKE_BUILD_TYPE=Release ^
@@ -71,7 +83,7 @@ copy /Y "%PAPYRUS_SRC%\ak_all_in_one_script.psc" "package\Scripts\Source\ak_all_
 
 echo [5/5] Creating Vortex archive in dist...
 powershell -NoProfile -ExecutionPolicy Bypass -Command ^
-  "$ErrorActionPreference='Stop'; $zip='dist/BodyHairSliders-v0.1.0.zip'; if(Test-Path $zip){Remove-Item $zip}; Compress-Archive -Path 'package/*' -DestinationPath $zip -CompressionLevel Optimal"
+  "$ErrorActionPreference='Stop'; $zip='%ZIP_PATH:\=/%'; if(Test-Path $zip){Remove-Item $zip}; Compress-Archive -Path 'package/*' -DestinationPath $zip -CompressionLevel Optimal"
 if errorlevel 1 exit /b 1
 
 echo.
@@ -79,5 +91,5 @@ echo Build complete:
 echo   package\SKSE\Plugins\BodyHairSliders.dll
 echo   package\Scripts\BodyHairSliders.pex
 echo   package\Scripts\ak_all_in_one_script.pex
-echo   dist\BodyHairSliders-v0.1.0.zip
+echo   %ZIP_PATH%
 endlocal
