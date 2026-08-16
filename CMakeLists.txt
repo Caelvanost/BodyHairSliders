@@ -31,6 +31,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE nlohmann_json::nlohmann_json)
 target_compile_definitions(${PROJECT_NAME} PRIVATE
     NOMINMAX
     WIN32_LEAN_AND_MEAN
+    BHS_VERSION_STRING="${PROJECT_VERSION}"
 )
 
 if(MSVC)
