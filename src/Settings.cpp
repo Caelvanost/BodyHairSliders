@@ -25,6 +25,15 @@ namespace BHS
             return value;
         }
 
+        std::string NormalizeKey(std::string_view value)
+        {
+            std::string result(value);
+            std::transform(result.begin(), result.end(), result.begin(), [](unsigned char c) {
+                return static_cast<char>(std::tolower(c));
+            });
+            return result;
+        }
+
         std::string MakeLabel(std::string value)
         {
             std::replace(value.begin(), value.end(), '_', ' ');
@@ -100,14 +109,14 @@ namespace BHS
                         OverlayStyle style;
                         style.id = styleEntry.value("id", "");
                         style.provider = provider.id;
-                        style.region = styleEntry.value("region", "");
+                        style.region = NormalizeKey(styleEntry.value("region", ""));
                         style.label = styleEntry.value("label", style.id);
                         style.texture = styleEntry.value("texture", "");
                         style.textureDark = styleEntry.value("textureDark", "");
                         style.textureFair = styleEntry.value("textureFair", "");
-                        style.sex = styleEntry.value("sex", "any");
+                        style.sex = NormalizeKey(styleEntry.value("sex", "any"));
                         style.type = styleEntry.value("type", "overlay");
-                        style.location = styleEntry.value("location", "body");
+                        style.location = NormalizeKey(styleEntry.value("location", "body"));
                         provider.styles.push_back(std::move(style));
                     }
                 }
@@ -116,14 +125,14 @@ namespace BHS
                     for (const auto& ruleEntry : providerEntry.at("scanRules")) {
                         ScanRule rule;
                         rule.directory = ruleEntry.value("directory", "");
-                        rule.region = ruleEntry.value("region", "");
-                        rule.sex = ruleEntry.value("sex", "any");
+                        rule.region = NormalizeKey(ruleEntry.value("region", ""));
+                        rule.sex = NormalizeKey(ruleEntry.value("sex", "any"));
                         rule.prefix = ruleEntry.value("prefix", "");
                         rule.excludePrefix = ruleEntry.value("excludePrefix", "");
                         rule.suffix = ruleEntry.value("suffix", ".dds");
                         rule.excludeSuffix = ruleEntry.value("excludeSuffix", "");
                         rule.pairDarkFair = ruleEntry.value("pairDarkFair", false);
-                        rule.location = ruleEntry.value("location", "body");
+                        rule.location = NormalizeKey(ruleEntry.value("location", "body"));
                         provider.scanRules.push_back(std::move(rule));
                     }
                 }
@@ -333,14 +342,17 @@ namespace BHS
 
     std::vector<const OverlayStyle*> Settings::GetStylesForRegion(std::string_view region, std::string_view sex) const
     {
+        const auto normalizedRegion = NormalizeKey(region);
+        const auto normalizedSex = NormalizeKey(sex);
+
         std::vector<const OverlayStyle*> result;
         for (const auto& provider : providers) {
             if (!provider.detected) {
                 continue;
             }
             for (const auto& style : provider.styles) {
-                if (style.region == region &&
-                    (sex == "any" || style.sex == "any" || style.sex == sex)) {
+                if (style.region == normalizedRegion &&
+                    (normalizedSex == "any" || style.sex == "any" || style.sex == normalizedSex)) {
                     result.push_back(&style);
                 }
             }
