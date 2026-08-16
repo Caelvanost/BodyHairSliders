@@ -33,7 +33,13 @@ Event OnSliderRequest(Actor player, ActorBase playerBase, Race actorRace, Bool i
     If BHS_AddRegionSlider("Arm Hair", "arms", "BHS_Arms", isFemale)
         anyRegion = True
     EndIf
+    If BHS_AddRegionSlider("Hand Hair", "hands", "BHS_Hands", isFemale)
+        anyRegion = True
+    EndIf
     If BHS_AddRegionSlider("Leg Hair", "legs", "BHS_Legs", isFemale)
+        anyRegion = True
+    EndIf
+    If BHS_AddRegionSlider("Foot Hair", "feet", "BHS_Feet", isFemale)
         anyRegion = True
     EndIf
     If BHS_AddRegionSlider("Butt Hair", "butt", "BHS_Butt", isFemale)
@@ -66,27 +72,31 @@ EndFunction
 
 Event OnSliderChanged(String callback, Float value)
     If callback == "BHS_Pubic"
-        BHS_ApplyRegion("Pubic Hair", "pubic", value)
+        BHS_ApplyRegion("pubic", value)
     ElseIf callback == "BHS_Armpits"
-        BHS_ApplyRegion("Armpit Hair", "armpits", value)
+        BHS_ApplyRegion("armpits", value)
     ElseIf callback == "BHS_Chest"
-        BHS_ApplyRegion("Chest Hair", "chest", value)
+        BHS_ApplyRegion("chest", value)
     ElseIf callback == "BHS_Stomach"
-        BHS_ApplyRegion("Stomach Hair", "stomach", value)
+        BHS_ApplyRegion("stomach", value)
     ElseIf callback == "BHS_Back"
-        BHS_ApplyRegion("Back Hair", "back", value)
+        BHS_ApplyRegion("back", value)
     ElseIf callback == "BHS_Arms"
-        BHS_ApplyRegion("Arm Hair", "arms", value)
+        BHS_ApplyRegion("arms", value)
+    ElseIf callback == "BHS_Hands"
+        BHS_ApplyRegion("hands", value)
     ElseIf callback == "BHS_Legs"
-        BHS_ApplyRegion("Leg Hair", "legs", value)
+        BHS_ApplyRegion("legs", value)
+    ElseIf callback == "BHS_Feet"
+        BHS_ApplyRegion("feet", value)
     ElseIf callback == "BHS_Butt"
-        BHS_ApplyRegion("Butt Hair", "butt", value)
+        BHS_ApplyRegion("butt", value)
     ElseIf callback == "BHS_Color"
         BHS_ApplyColor(value)
     EndIf
 EndEvent
 
-Function BHS_ApplyRegion(String displayName, String region, Float value)
+Function BHS_ApplyRegion(String region, Float value)
     Int requested = value as Int
     Int count = BodyHairSliders.GetStyleCount(region, BHS_IsFemale)
 
@@ -96,11 +106,9 @@ Function BHS_ApplyRegion(String displayName, String region, Float value)
         requested = count
     EndIf
 
-    If BodyHairSliders.ApplyStyle(region, requested, BHS_IsFemale)
-        Debug.Notification(displayName + ": " + BodyHairSliders.GetStyleName(region, requested, BHS_IsFemale))
-    Else
-        Debug.Notification(displayName + ": application failed")
-    EndIf
+    ; No Debug.Notification here: slider changes should stay silent on-screen.
+    ; The SKSE plugin keeps detailed diagnostics in BodyHairSliders.log.
+    BodyHairSliders.ApplyStyle(region, requested, BHS_IsFemale)
 EndFunction
 
 Function BHS_ApplyColor(Float value)
@@ -113,9 +121,6 @@ Function BHS_ApplyColor(Float value)
         requested = count - 1
     EndIf
 
-    If BodyHairSliders.SetColorIndex(requested)
-        Debug.Notification("Body Hair Color: " + BodyHairSliders.GetColorName(requested))
-    Else
-        Debug.Notification("Body Hair Color: application failed")
-    EndIf
+    ; Keep RaceMenu interaction silent; failures remain visible in the SKSE log.
+    BodyHairSliders.SetColorIndex(requested)
 EndFunction
