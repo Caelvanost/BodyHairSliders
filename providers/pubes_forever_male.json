@@ -1,0 +1,8 @@
+{
+  "id": "pubes_forever_male",
+  "name": "Pubes Forever Male",
+  "plugin": "AK_RM_PubicStyles_All_In_One_M.esp",
+  "scanRules": [
+    { "directory": "Data/textures/actors/character/ak_rm_pubic_hair_all_in_one", "region": "pubic", "sex": "male", "prefix": "ak_", "suffix": "M.dds", "location": "body" }
+  ]
+}
