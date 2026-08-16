@@ -1,8 +1,10 @@
 # BodyHairSliders
 
-Skyrim SE/AE SKSE plugin that exposes body-hair assets from multiple compatible mods through a unified **RaceMenu > Body** frontend.
+Skyrim SE/AE SKSE plugin that exposes compatible third-party body-hair assets through a unified RaceMenu frontend.
 
 ## RaceMenu controls
+
+Starting with **v0.4.0**, BodyHairSliders creates a dedicated **RaceMenu > Body Hair** category instead of injecting every control into the vanilla Body category.
 
 The frontend dynamically exposes only regions for which compatible styles are detected:
 
@@ -20,7 +22,7 @@ The frontend dynamically exposes only regions for which compatible styles are de
 
 Each region uses `0 = None / Shaved`, followed by the detected styles. `Body Hair Color` provides `Match Hair` plus built-in color presets.
 
-HIMBO arm/leg textures are rendered as Body Paints, hand textures as Hand Paints, and foot textures as Feet Paints.
+The UI category is independent from the SKEE render location: HIMBO arms/back/belly/chest/legs use Body Paint slots, hands use Hand Paint slots, and feet use Feet Paint slots while all controls remain together under **Body Hair**.
 
 ## FOMOD provider selection
 
@@ -42,7 +44,7 @@ The selected definitions are installed under:
 SKSE/Plugins/BodyHairSliders/providers/*.json
 ```
 
-`config.json` now contains only global BodyHairSliders settings. The runtime still accepts the old pre-v0.3 `providers` array inside `config.json` for upgrade compatibility; a modular provider file with the same provider ID replaces the legacy definition.
+`config.json` contains only global BodyHairSliders settings. The runtime still accepts the old pre-v0.3 `providers` array inside `config.json` for upgrade compatibility; a modular provider file with the same provider ID replaces the legacy definition.
 
 Provider JSON files are loaded in deterministic filename order, and matching texture files are sorted before styles are generated. This gives stable slider ordering for future persistence and synchronization.
 
@@ -90,6 +92,18 @@ Data/Textures/actors/character/character assets/overlays/
 
 Supported regions include arms, hands, armpits, butt, back, stomach/belly, chest, legs and feet.
 
+Expected HIMBO controls are:
+
+- Arms: Light / Medium / Heavy
+- Ass: Light / Medium / Heavy
+- Back: Light / Medium / Heavy
+- Belly: Light / Medium / Heavy
+- Chest: Light / Medium / Heavy
+- Legs: Light / Medium / Heavy
+- Hands: Light / Medium / Heavy, rendered as Hand Paint
+- Armpit: one style
+- Feet: one style, rendered as Feet Paint
+
 ### OPubes NG
 
 OPubes NG is treated as an integration provider. Its assets remain external.
@@ -104,22 +118,31 @@ The runtime uses:
 - `Override` to set diffuse texture, tint color and alpha;
 - `ActorUpdateManager` to rebuild overlays/node overrides.
 
-A free slot is selected independently per RaceMenu overlay location. Existing texture overrides are treated as occupied so BodyHairSliders does not intentionally replace unrelated paints.
+A free slot is selected independently per RaceMenu overlay location. Existing texture overrides are treated as occupied so BodyHairSliders does not intentionally replace unrelated paints. Existing BodyHairSliders textures can be reclaimed after reloads so saved SKEE overrides do not permanently leak slots.
 
-The SKEE rendering backend has been validated in game with a male Pubes Forever style.
+The FOMOD can install an optional `skee64_custom.ini` profile with expanded Body/Hand/Feet overlay capacity for setups where the RaceMenu defaults are too small.
 
 ## RaceMenu frontend host
 
-The current frontend still reuses the existing `AK_All_In_One_Script` quest supplied by **Pubic Hairstyles All In One / Pubes Forever**. BodyHairSliders replaces that quest's script implementation with a dynamic frontend backed by the SKSE DLL.
+v0.4.0 uses RaceMenu's custom-category API:
 
-For the current version:
+```text
+AddCategory("BHS_BODYHAIR", "Body Hair")
+AddSliderEx(..., "BHS_BODYHAIR", ...)
+```
+
+This removes the dependency on the built-in `category_body` mask and keeps all BodyHairSliders controls in one dedicated category.
+
+The current package still temporarily reuses the existing `AK_All_In_One_Script` quest supplied by **Pubic Hairstyles All In One / Pubes Forever** as the event host. BodyHairSliders replaces that quest's script implementation with the custom-category frontend backed by the SKSE DLL.
+
+For v0.4.0:
 
 - keep the underlying Pubes Forever / Pubic Hairstyles quest host installed;
 - BodyHairSliders must win the conflict for `Scripts/ak_all_in_one_script.pex`;
 - do not install another selector override that wins that same script conflict;
 - provider textures themselves are never redistributed by BodyHairSliders.
 
-A future version can move the frontend to a dedicated BodyHairSliders ESP/quest.
+A dedicated `BodyHairSliders.esp`/quest remains the next frontend-host migration so the mod no longer depends on the provider quest at all.
 
 ## Proof-of-concept
 
@@ -134,7 +157,7 @@ The old automatic renderer test remains available in `config.json` but should st
 }
 ```
 
-## Current state: v0.3.0
+## Current state: v0.4.0
 
 Implemented:
 
@@ -145,21 +168,23 @@ Implemented:
 - deterministic provider/style ordering;
 - Dark/Fair pairing and sex filtering;
 - SKEE Body, Hand and Feet overlay rendering;
-- free overlay-slot reservation;
+- free overlay-slot reservation and saved-slot reclamation;
 - texture/tint/alpha overrides and refresh;
 - native Papyrus API for style discovery/application;
-- dynamic `RaceMenu > Body` sliders;
+- dedicated `RaceMenu > Body Hair` custom category;
+- dynamic region sliders using `AddSliderEx`;
 - `None / Shaved` for every region;
 - `Match Hair` plus color presets;
 - no slider-change `Debug.Notification` spam;
+- optional expanded RaceMenu overlay capacity;
 - reapplication of selections while the current Skyrim process is running;
 - verified FOMOD archive packaging.
 
 Still planned:
 
+- dedicated BodyHairSliders ESP/quest instead of reusing `AK_All_In_One_Script`;
 - durable per-save semantic selection persistence across game restarts;
 - automatic reapply hooks for additional NiNode/appearance refresh cases;
-- dedicated BodyHairSliders ESP/quest instead of reusing `AK_All_In_One_Script`;
 - stable MorphSyncTogether synchronization API.
 
 ## Requirements
@@ -177,7 +202,7 @@ Runtime:
 - SKSE64
 - Address Library for SKSE Plugins
 - RaceMenu / SKEE
-- Pubic Hairstyles All In One / Pubes Forever quest host for the current frontend
+- Pubic Hairstyles All In One / Pubes Forever quest host for the v0.4.0 frontend
 - one or more supported body-hair asset providers selected in the FOMOD
 
 ## Build
@@ -195,13 +220,13 @@ build_release.bat
 
 The version is read from the root `VERSION` file by CMake and the packaging scripts.
 
-The build compiles C++, compiles the two Papyrus scripts, stages the core and optional provider packages, validates the FOMOD XML and archive contents, and produces:
+The build compiles C++, compiles the Papyrus API/frontend, stages the core and optional provider packages, validates the FOMOD XML and archive contents, and produces:
 
 ```text
 package/SKSE/Plugins/BodyHairSliders.dll
 package/Scripts/BodyHairSliders.pex
 package/Scripts/ak_all_in_one_script.pex
-dist/BodyHairSliders-v0.3.0-FOMOD.zip
+dist/BodyHairSliders-v0.4.0-FOMOD.zip
 ```
 
 The source `providers/*.json` files are **not** copied into the Core package. Only the providers selected in the FOMOD are installed.
@@ -211,10 +236,10 @@ The source `providers/*.json` files are **not** copied into the Core package. On
 1. Keep the source body-hair provider mods installed.
 2. Leave `proofOfConcept.enabled` set to `false`.
 3. If an older OPubes RaceMenu Selector override is installed, select `Shaved`, close RaceMenu and save before disabling that selector override.
-4. Install `dist/BodyHairSliders-v0.3.0-FOMOD.zip` with Vortex.
-5. In the FOMOD, select the body-hair packs installed in that Skyrim setup.
+4. Install `dist/BodyHairSliders-v0.4.0-FOMOD.zip` with Vortex.
+5. In the FOMOD, select the body-hair packs installed in that Skyrim setup and use the extended overlay-slot option if needed.
 6. Make BodyHairSliders win the conflict for `Scripts/ak_all_in_one_script.pex`.
-7. Deploy, launch Skyrim, then open `showracemenu` and go to **Body**.
+7. Deploy, launch Skyrim, then open `showracemenu` and select the new **Body Hair** category.
 8. Confirm that only regions supplied by the selected/installed providers appear.
 
 Runtime diagnostics are written to:
