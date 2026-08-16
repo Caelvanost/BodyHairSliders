@@ -3,7 +3,7 @@
   "name": "HIMBO V3 Bodyhair Overlays for Racemenu",
   "plugin": "HIMBOBodyhairOverlay.esp",
   "scanRules": [
-    { "directory": "Data/Textures/actors/character/character assets/overlays", "region": "arms", "sex": "male", "prefix": "HIMBO_BodyHair_Arm", "suffix": ".dds", "location": "body" },
+    { "directory": "Data/Textures/actors/character/character assets/overlays", "region": "arms", "sex": "male", "prefix": "HIMBO_BodyHair_Arm", "excludePrefix": "HIMBO_BodyHair_Armpit", "suffix": ".dds", "location": "body" },
     { "directory": "Data/Textures/actors/character/character assets/overlays", "region": "hands", "sex": "male", "prefix": "HIMBO_BodyHair_HandsArm", "suffix": ".dds", "location": "hand" },
     { "directory": "Data/Textures/actors/character/character assets/overlays", "region": "armpits", "sex": "male", "prefix": "HIMBO_BodyHair_Armpit", "suffix": ".dds", "location": "body" },
     { "directory": "Data/Textures/actors/character/character assets/overlays", "region": "butt", "sex": "male", "prefix": "HIMBO_BodyHair_Ass", "suffix": ".dds", "location": "body" },
