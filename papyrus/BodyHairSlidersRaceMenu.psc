@@ -42,7 +42,7 @@ Int Function BHS_AddRegionSlider(String displayName, String region, String callb
         Return priority
     EndIf
 
-    Int current = BodyHairSliders.GetCurrentStyleIndex(region)
+    Int current = BodyHairSliders.GetCurrentStyleIndex(region, isFemale)
     If current < 0 || current > styleCount
         current = 0
     EndIf
