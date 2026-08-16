@@ -34,5 +34,15 @@
     { "id": "himbo_legs_heavy", "region": "legs", "label": "Heavy", "sex": "male", "texture": "Data/Textures/actors/character/character assets/overlays/HIMBO_BodyHair_Legs3.dds", "location": "body" },
 
     { "id": "himbo_feet", "region": "feet", "label": "Body Hair", "sex": "male", "texture": "Data/Textures/actors/character/character assets/overlays/HIMBO_BodyHair_BodyFeet.dds", "location": "feet" }
+  ],
+  "scanRules": [
+    {
+      "directory": "Data/Textures/actors/character/character assets/overlays",
+      "region": "__detect_only__",
+      "sex": "male",
+      "prefix": "__BodyHairSliders_DetectionOnly_NoMatch__",
+      "suffix": ".dds",
+      "location": "body"
+    }
   ]
 }
