@@ -1,0 +1,8 @@
+{
+  "id": "pubic_hairstyles_cbbe",
+  "name": "Pubic Hairstyles All In One CBBE / Pubes Forever Female",
+  "plugin": "AK_RM_PubicStyles_All_In_One.esp",
+  "scanRules": [
+    { "directory": "Data/textures/actors/character/ak_rm_pubic_hair_all_in_one", "region": "pubic", "sex": "female", "prefix": "ak_", "suffix": ".dds", "excludeSuffix": "M.dds", "location": "body" }
+  ]
+}
