@@ -43,13 +43,19 @@ if not exist "%PAPYRUS_FLAGS%" (
   echo   %PAPYRUS_FLAGS%
   exit /b 1
 )
+if not exist "package\BodyHairSliders.esp" (
+  echo [ERROR] package\BodyHairSliders.esp is missing.
+  exit /b 1
+)
 
 if exist build rmdir /s /q build
 
 if exist "package\SKSE\Plugins\BodyHairSliders.dll" del /q "package\SKSE\Plugins\BodyHairSliders.dll"
 if exist "package\SKSE\Plugins\BodyHairSliders\providers" rmdir /s /q "package\SKSE\Plugins\BodyHairSliders\providers"
 if exist "package\Scripts\BodyHairSliders.pex" del /q "package\Scripts\BodyHairSliders.pex"
+if exist "package\Scripts\BodyHairSlidersRaceMenu.pex" del /q "package\Scripts\BodyHairSlidersRaceMenu.pex"
 if exist "package\Scripts\ak_all_in_one_script.pex" del /q "package\Scripts\ak_all_in_one_script.pex"
+if exist "package\Scripts\Source\ak_all_in_one_script.psc" del /q "package\Scripts\Source\ak_all_in_one_script.psc"
 
 if not exist "package\SKSE\Plugins" mkdir "package\SKSE\Plugins"
 if not exist "package\Scripts" mkdir "package\Scripts"
@@ -75,12 +81,12 @@ echo [3/5] Compiling Papyrus API declarations...
 "%PAPYRUS_COMPILER%" "%PAPYRUS_SRC%\BodyHairSliders.psc" -f="%PAPYRUS_FLAGS%" -i="%PAPYRUS_SRC%;%PAPYRUS_STUBS%;%PAPYRUS_VANILLA%" -o="%PAPYRUS_OUT%"
 if errorlevel 1 exit /b 1
 
-echo [4/5] Compiling RaceMenu frontend...
-"%PAPYRUS_COMPILER%" "%PAPYRUS_SRC%\ak_all_in_one_script.psc" -f="%PAPYRUS_FLAGS%" -i="%PAPYRUS_SRC%;%PAPYRUS_STUBS%;%PAPYRUS_VANILLA%" -o="%PAPYRUS_OUT%"
+echo [4/5] Compiling dedicated RaceMenu frontend...
+"%PAPYRUS_COMPILER%" "%PAPYRUS_SRC%\BodyHairSlidersRaceMenu.psc" -f="%PAPYRUS_FLAGS%" -i="%PAPYRUS_SRC%;%PAPYRUS_STUBS%;%PAPYRUS_VANILLA%" -o="%PAPYRUS_OUT%"
 if errorlevel 1 exit /b 1
 
 copy /Y "%PAPYRUS_SRC%\BodyHairSliders.psc" "package\Scripts\Source\BodyHairSliders.psc" >nul
-copy /Y "%PAPYRUS_SRC%\ak_all_in_one_script.psc" "package\Scripts\Source\ak_all_in_one_script.psc" >nul
+copy /Y "%PAPYRUS_SRC%\BodyHairSlidersRaceMenu.psc" "package\Scripts\Source\BodyHairSlidersRaceMenu.psc" >nul
 
 echo [5/5] Creating and verifying FOMOD archive...
 powershell -NoProfile -ExecutionPolicy Bypass -File "%CD%\build_fomod.ps1"
@@ -88,8 +94,9 @@ if errorlevel 1 exit /b 1
 
 echo.
 echo Build complete:
+echo   package\BodyHairSliders.esp
 echo   package\SKSE\Plugins\BodyHairSliders.dll
 echo   package\Scripts\BodyHairSliders.pex
-echo   package\Scripts\ak_all_in_one_script.pex
+echo   package\Scripts\BodyHairSlidersRaceMenu.pex
 echo   %ZIP_PATH%
 endlocal
