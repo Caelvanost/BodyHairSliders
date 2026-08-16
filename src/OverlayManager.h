@@ -11,6 +11,7 @@ namespace BHS
 
         bool Apply(RE::Actor* actor, const OverlayStyle* style, const RGBA& color);
         bool Clear(RE::Actor* actor, std::string_view region);
+        std::int32_t DetectStyleIndex(RE::Actor* actor, std::string_view region, bool isFemale) const;
         void Refresh(RE::Actor* actor);
 
     private:
