@@ -13,6 +13,7 @@ namespace BHS
         std::string textureFair;
         std::string sex{ "any" };
         std::string type{ "overlay" };
+        std::string location{ "body" };
     };
 
     struct ScanRule
@@ -24,6 +25,7 @@ namespace BHS
         std::string suffix{ ".dds" };
         std::string excludeSuffix;
         bool pairDarkFair{ false };
+        std::string location{ "body" };
     };
 
     struct Provider
