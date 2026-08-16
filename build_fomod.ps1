@@ -4,18 +4,15 @@ $Root = Split-Path -Parent $MyInvocation.MyCommand.Path
 $VersionFile = Join-Path $Root "VERSION"
 $Package = Join-Path $Root "package"
 $ProviderSource = Join-Path $Root "providers"
+$OptionalSource = Join-Path $Root "optional\overlay_capacity"
 $FomodSource = Join-Path $Root "fomod"
 $Build = Join-Path $Root "build"
 $Stage = Join-Path $Build "fomod-stage"
 $Dist = Join-Path $Root "dist"
 
-if (-not (Test-Path -LiteralPath $VersionFile)) {
-    throw "VERSION file not found: $VersionFile"
-}
+if (-not (Test-Path -LiteralPath $VersionFile)) { throw "VERSION file not found: $VersionFile" }
 $Version = (Get-Content -LiteralPath $VersionFile -Raw).Trim()
-if (-not $Version) {
-    throw "VERSION file is empty."
-}
+if (-not $Version) { throw "VERSION file is empty." }
 
 $RequiredCore = @(
     (Join-Path $Package "SKSE\Plugins\BodyHairSliders.dll"),
@@ -23,11 +20,7 @@ $RequiredCore = @(
     (Join-Path $Package "Scripts\BodyHairSliders.pex"),
     (Join-Path $Package "Scripts\ak_all_in_one_script.pex")
 )
-foreach ($Path in $RequiredCore) {
-    if (-not (Test-Path -LiteralPath $Path)) {
-        throw "Required core file missing: $Path"
-    }
-}
+foreach ($Path in $RequiredCore) { if (-not (Test-Path -LiteralPath $Path)) { throw "Required core file missing: $Path" } }
 
 $ProviderPackages = @(
     @{ Stage = "10 Nordic Warmaiden"; File = "nordic_warmaiden.json" },
@@ -37,24 +30,18 @@ $ProviderPackages = @(
     @{ Stage = "50 OPubes"; File = "opubes.json" }
 )
 
+$OverlayCapacityIni = Join-Path $OptionalSource "skee64_custom.ini"
 $ModuleConfig = Join-Path $FomodSource "ModuleConfig.xml"
 $Info = Join-Path $FomodSource "info.xml"
-foreach ($Path in @($ModuleConfig, $Info)) {
-    if (-not (Test-Path -LiteralPath $Path)) {
-        throw "Required FOMOD metadata missing: $Path"
-    }
+foreach ($Path in @($ModuleConfig, $Info, $OverlayCapacityIni)) {
+    if (-not (Test-Path -LiteralPath $Path)) { throw "Required FOMOD file missing: $Path" }
 }
-
 foreach ($Provider in $ProviderPackages) {
     $Path = Join-Path $ProviderSource $Provider.File
-    if (-not (Test-Path -LiteralPath $Path)) {
-        throw "Provider config missing: $Path"
-    }
+    if (-not (Test-Path -LiteralPath $Path)) { throw "Provider config missing: $Path" }
 }
 
-if (Test-Path -LiteralPath $Stage) {
-    Remove-Item -LiteralPath $Stage -Recurse -Force
-}
+if (Test-Path -LiteralPath $Stage) { Remove-Item -LiteralPath $Stage -Recurse -Force }
 New-Item -ItemType Directory -Force -Path $Stage | Out-Null
 
 $CoreStage = Join-Path $Stage "00 Core"
@@ -67,6 +54,10 @@ foreach ($Provider in $ProviderPackages) {
     New-Item -ItemType Directory -Force -Path $Destination | Out-Null
     Copy-Item (Join-Path $ProviderSource $Provider.File) (Join-Path $Destination $Provider.File) -Force
 }
+
+$CapacityStage = Join-Path $Stage "60 Extended Overlay Slots\SKSE\Plugins"
+New-Item -ItemType Directory -Force -Path $CapacityStage | Out-Null
+Copy-Item $OverlayCapacityIni (Join-Path $CapacityStage "skee64_custom.ini") -Force
 
 $FomodStage = Join-Path $Stage "fomod"
 New-Item -ItemType Directory -Force -Path $FomodStage | Out-Null
@@ -83,16 +74,11 @@ foreach ($Path in @($StagedModuleConfig, $StagedInfo)) {
 try {
     [void][xml](Get-Content -LiteralPath $StagedModuleConfig -Raw)
     [void][xml](Get-Content -LiteralPath $StagedInfo -Raw)
-} catch {
-    throw "Invalid staged FOMOD XML: $($_.Exception.Message)"
-}
+} catch { throw "Invalid staged FOMOD XML: $($_.Exception.Message)" }
 
 New-Item -ItemType Directory -Force -Path $Dist | Out-Null
 $Zip = Join-Path $Dist "BodyHairSliders-v$Version-FOMOD.zip"
-if (Test-Path -LiteralPath $Zip) {
-    Remove-Item -LiteralPath $Zip -Force
-}
-
+if (Test-Path -LiteralPath $Zip) { Remove-Item -LiteralPath $Zip -Force }
 Compress-Archive -Path (Join-Path $Stage "*") -DestinationPath $Zip -CompressionLevel Optimal -Force
 
 Add-Type -AssemblyName System.IO.Compression.FileSystem
@@ -109,17 +95,12 @@ try {
         "30 Pubes Forever Female/SKSE/Plugins/BodyHairSliders/providers/pubes_forever_female.json",
         "40 Pubes Forever Male/SKSE/Plugins/BodyHairSliders/providers/pubes_forever_male.json",
         "50 OPubes/SKSE/Plugins/BodyHairSliders/providers/opubes.json",
+        "60 Extended Overlay Slots/SKSE/Plugins/skee64_custom.ini",
         "fomod/ModuleConfig.xml",
         "fomod/info.xml"
     )
-    foreach ($Entry in $RequiredEntries) {
-        if ($Entries -notcontains $Entry) {
-            throw "Required FOMOD archive entry missing: $Entry"
-        }
-    }
-} finally {
-    $Archive.Dispose()
-}
+    foreach ($Entry in $RequiredEntries) { if ($Entries -notcontains $Entry) { throw "Required FOMOD archive entry missing: $Entry" } }
+} finally { $Archive.Dispose() }
 
 Write-Host ""
 Write-Host "OK - verified FOMOD package created:" -ForegroundColor Green
