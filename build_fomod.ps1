@@ -15,10 +15,11 @@ $Version = (Get-Content -LiteralPath $VersionFile -Raw).Trim()
 if (-not $Version) { throw "VERSION file is empty." }
 
 $RequiredCore = @(
+    (Join-Path $Package "BodyHairSliders.esp"),
     (Join-Path $Package "SKSE\Plugins\BodyHairSliders.dll"),
     (Join-Path $Package "SKSE\Plugins\BodyHairSliders\config.json"),
     (Join-Path $Package "Scripts\BodyHairSliders.pex"),
-    (Join-Path $Package "Scripts\ak_all_in_one_script.pex")
+    (Join-Path $Package "Scripts\BodyHairSlidersRaceMenu.pex")
 )
 foreach ($Path in $RequiredCore) { if (-not (Test-Path -LiteralPath $Path)) { throw "Required core file missing: $Path" } }
 
@@ -86,10 +87,11 @@ $Archive = [System.IO.Compression.ZipFile]::OpenRead($Zip)
 try {
     $Entries = @($Archive.Entries | ForEach-Object { $_.FullName.Replace('\', '/') })
     $RequiredEntries = @(
+        "00 Core/BodyHairSliders.esp",
         "00 Core/SKSE/Plugins/BodyHairSliders.dll",
         "00 Core/SKSE/Plugins/BodyHairSliders/config.json",
         "00 Core/Scripts/BodyHairSliders.pex",
-        "00 Core/Scripts/ak_all_in_one_script.pex",
+        "00 Core/Scripts/BodyHairSlidersRaceMenu.pex",
         "10 Nordic Warmaiden/SKSE/Plugins/BodyHairSliders/providers/nordic_warmaiden.json",
         "20 HIMBO/SKSE/Plugins/BodyHairSliders/providers/himbo.json",
         "30 Pubes Forever Female/SKSE/Plugins/BodyHairSliders/providers/pubes_forever_female.json",
