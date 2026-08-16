@@ -18,6 +18,7 @@ add_commonlibsse_plugin(${PROJECT_NAME}
         src/SKEEInterfaces.h
         src/OverlayManager.h
         src/OverlayManager.cpp
+        src/OverlayState.cpp
         src/RaceMenuIntegration.h
         src/RaceMenuIntegration.cpp
         src/PapyrusAPI.h
