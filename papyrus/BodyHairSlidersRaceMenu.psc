@@ -1,15 +1,9 @@
 Scriptname BodyHairSlidersRaceMenu extends RaceMenuBase
 
-; Dedicated BodyHairSliders RaceMenu frontend hosted by BodyHairSliders.esp.
+; BodyHairSliders RaceMenu frontend hosted by BodyHairSliders.esp.
+; Sliders are injected directly into RaceMenu's native Hair category.
 
-String Property BHS_CategoryKey = "BHS_BODYHAIR" AutoReadOnly
 Bool BHS_IsFemale = False
-
-Event OnCategoryRequest()
-    ; RaceMenu sorts built-in and injected categories by numeric priority.
-    ; This value targets the slot immediately following the native Hair tab.
-    AddCategory(BHS_CategoryKey, "Body Hair", -125)
-EndEvent
 
 Event OnBodyPaintRequest()
     ; BodyHairSliders renders through SKEE itself. Do not add provider paints here.
@@ -18,28 +12,27 @@ EndEvent
 Event OnSliderRequest(Actor player, ActorBase playerBase, Race actorRace, Bool isFemale)
     BHS_IsFemale = isFemale
 
-    Int priority = 10
-    priority = BHS_AddRegionSlider("Pubic Hair", "pubic", "BHS_Pubic", isFemale, priority)
-    priority = BHS_AddRegionSlider("Armpit Hair", "armpits", "BHS_Armpits", isFemale, priority)
-    priority = BHS_AddRegionSlider("Chest Hair", "chest", "BHS_Chest", isFemale, priority)
-    priority = BHS_AddRegionSlider("Stomach Hair", "stomach", "BHS_Stomach", isFemale, priority)
-    priority = BHS_AddRegionSlider("Back Hair", "back", "BHS_Back", isFemale, priority)
-    priority = BHS_AddRegionSlider("Arm Hair", "arms", "BHS_Arms", isFemale, priority)
-    priority = BHS_AddRegionSlider("Hand Hair", "hands", "BHS_Hands", isFemale, priority)
-    priority = BHS_AddRegionSlider("Leg Hair", "legs", "BHS_Legs", isFemale, priority)
-    priority = BHS_AddRegionSlider("Foot Hair", "feet", "BHS_Feet", isFemale, priority)
-    priority = BHS_AddRegionSlider("Butt Hair", "butt", "BHS_Butt", isFemale, priority)
+    BHS_AddRegionSlider("Pubic Hair", "pubic", "BHS_Pubic", isFemale)
+    BHS_AddRegionSlider("Armpit Hair", "armpits", "BHS_Armpits", isFemale)
+    BHS_AddRegionSlider("Chest Hair", "chest", "BHS_Chest", isFemale)
+    BHS_AddRegionSlider("Stomach Hair", "stomach", "BHS_Stomach", isFemale)
+    BHS_AddRegionSlider("Back Hair", "back", "BHS_Back", isFemale)
+    BHS_AddRegionSlider("Arm Hair", "arms", "BHS_Arms", isFemale)
+    BHS_AddRegionSlider("Hand Hair", "hands", "BHS_Hands", isFemale)
+    BHS_AddRegionSlider("Leg Hair", "legs", "BHS_Legs", isFemale)
+    BHS_AddRegionSlider("Foot Hair", "feet", "BHS_Feet", isFemale)
+    BHS_AddRegionSlider("Butt Hair", "butt", "BHS_Butt", isFemale)
 
     Int colorCount = BodyHairSliders.GetColorCount()
     If colorCount > 0
-        AddSliderEx("Body Hair Color", BHS_CategoryKey, "BHS_Color", 0.0, (colorCount - 1) as Float, 1.0, BodyHairSliders.GetCurrentColorIndex() as Float, 0, priority)
+        AddSlider("Body Hair Color", CATEGORY_HAIR, "BHS_Color", 0.0, (colorCount - 1) as Float, 1.0, BodyHairSliders.GetCurrentColorIndex() as Float)
     EndIf
 EndEvent
 
-Int Function BHS_AddRegionSlider(String displayName, String region, String callbackName, Bool isFemale, Int priority)
+Function BHS_AddRegionSlider(String displayName, String region, String callbackName, Bool isFemale)
     Int styleCount = BodyHairSliders.GetStyleCount(region, isFemale)
     If styleCount <= 0
-        Return priority
+        Return
     EndIf
 
     Int current = BodyHairSliders.GetCurrentStyleIndex(region, isFemale)
@@ -48,8 +41,7 @@ Int Function BHS_AddRegionSlider(String displayName, String region, String callb
     EndIf
 
     ; Slider position 0 is always None / Shaved. 1..N map to detected styles.
-    AddSliderEx(displayName, BHS_CategoryKey, callbackName, 0.0, styleCount as Float, 1.0, current as Float, 0, priority)
-    Return priority + 10
+    AddSlider(displayName, CATEGORY_HAIR, callbackName, 0.0, styleCount as Float, 1.0, current as Float)
 EndFunction
 
 Event OnSliderChanged(String callback, Float value)
