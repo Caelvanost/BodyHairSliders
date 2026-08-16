@@ -2,6 +2,7 @@
 Scriptname RaceMenuBase extends Quest
 
 Int Property category_body = 4 AutoReadOnly
+Int Property CATEGORY_HAIR = 256 AutoReadOnly
 
 Function AddBodyPaint(String name, String texturePath)
 EndFunction
