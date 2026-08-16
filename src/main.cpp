@@ -1,5 +1,6 @@
 #include "HairColor.h"
 #include "OverlayManager.h"
+#include "PapyrusAPI.h"
 #include "RaceMenuIntegration.h"
 #include "Settings.h"
 
@@ -64,6 +65,7 @@ namespace
             break;
         case SKSE::MessagingInterface::kPostLoadGame:
             RunProofOfConcept();
+            BHS::PapyrusAPI::ReapplyPlayerSelections();
             break;
         default:
             break;
@@ -77,6 +79,10 @@ SKSEPluginLoad(const SKSE::LoadInterface* skse)
     SKSE::Init(skse);
 
     SKSE::log::info("BodyHairSliders v0.1.0 draft loading");
+
+    if (const auto papyrus = SKSE::GetPapyrusInterface()) {
+        papyrus->Register(BHS::PapyrusAPI::Register);
+    }
 
     if (const auto messaging = SKSE::GetMessagingInterface()) {
         messaging->RegisterListener(OnMessage);
