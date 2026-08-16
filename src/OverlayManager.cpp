@@ -189,11 +189,12 @@ namespace BHS
 
         auto actorIt = slots_.find(actor->GetFormID());
         if (actorIt == slots_.end()) {
-            return false;
+            // None/Shaved is already the effective state when we own no slot.
+            return true;
         }
         auto slotIt = actorIt->second.find(std::string(region));
         if (slotIt == actorIt->second.end()) {
-            return false;
+            return true;
         }
 
         const auto* format = overlay->GetOverlayFormat(
