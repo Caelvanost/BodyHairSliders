@@ -6,7 +6,9 @@ String Property BHS_CategoryKey = "BHS_BODYHAIR" AutoReadOnly
 Bool BHS_IsFemale = False
 
 Event OnCategoryRequest()
-    AddCategory(BHS_CategoryKey, "Body Hair", 450)
+    ; RaceMenu's built-in categories use negative priorities. Keep Body Hair
+    ; between the native Body and Head groups instead of appending it at the end.
+    AddCategory(BHS_CategoryKey, "Body Hair", -75)
 EndEvent
 
 Event OnBodyPaintRequest()
