@@ -18,6 +18,8 @@ add_commonlibsse_plugin(${PROJECT_NAME}
         src/OverlayManager.cpp
         src/RaceMenuIntegration.h
         src/RaceMenuIntegration.cpp
+        src/PapyrusAPI.h
+        src/PapyrusAPI.cpp
 )
 
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_23)
