@@ -61,10 +61,18 @@ namespace BHS::PapyrusAPI
             return RE::BSFixedString(label.c_str());
         }
 
-        std::int32_t GetCurrentStyleIndex(RE::StaticFunctionTag*, RE::BSFixedString region)
+        std::int32_t GetCurrentStyleIndex(RE::StaticFunctionTag*, RE::BSFixedString region, bool female)
         {
-            const auto it = g_currentSelections.find(ToString(region));
-            return it != g_currentSelections.end() ? it->second : 0;
+            const auto regionName = ToString(region);
+            auto* player = RE::PlayerCharacter::GetSingleton();
+            if (!player) {
+                return 0;
+            }
+
+            const auto liveIndex = OverlayManager::GetSingleton().DetectStyleIndex(player, regionName, female);
+            g_currentSelections[regionName] = liveIndex;
+            g_currentFemale = female;
+            return liveIndex;
         }
 
         bool ApplyStyleInternal(std::string_view region, std::int32_t index, bool female)
