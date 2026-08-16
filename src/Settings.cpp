@@ -98,6 +98,7 @@ namespace BHS
                             style.textureFair = styleEntry.value("textureFair", "");
                             style.sex = styleEntry.value("sex", "any");
                             style.type = styleEntry.value("type", "overlay");
+                            style.location = styleEntry.value("location", "body");
                             provider.styles.push_back(std::move(style));
                         }
                     }
@@ -112,6 +113,7 @@ namespace BHS
                             rule.suffix = ruleEntry.value("suffix", ".dds");
                             rule.excludeSuffix = ruleEntry.value("excludeSuffix", "");
                             rule.pairDarkFair = ruleEntry.value("pairDarkFair", false);
+                            rule.location = ruleEntry.value("location", "body");
                             provider.scanRules.push_back(std::move(rule));
                         }
                     }
@@ -198,6 +200,7 @@ namespace BHS
                         style.region = rule.region;
                         style.label = MakeLabel(stem);
                         style.sex = rule.sex;
+                        style.location = rule.location;
                         provider.styles.push_back(std::move(style));
                         const auto index = provider.styles.size() - 1;
                         pairedStyles.emplace(key, index);
@@ -218,6 +221,7 @@ namespace BHS
                     style.label = MakeLabel(stem);
                     style.texture = texturePath;
                     style.sex = rule.sex;
+                    style.location = rule.location;
                     provider.styles.push_back(std::move(style));
                 }
             }
