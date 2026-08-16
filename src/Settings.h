@@ -22,6 +22,7 @@ namespace BHS
         std::string region;
         std::string sex{ "any" };
         std::string prefix;
+        std::string excludePrefix;
         std::string suffix{ ".dds" };
         std::string excludeSuffix;
         bool pairDarkFair{ false };
