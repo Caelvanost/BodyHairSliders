@@ -9,100 +9,27 @@
       <optionalFileGroups order="Explicit">
         <group name="Select the body-hair packs you have installed" type="SelectAny">
           <plugins order="Explicit">
-            <plugin name="Nordic Warmaiden Body Hair">
-              <description>Enables female pubic, armpit, stomach, butt and back styles from Nordic Warmaiden Body Hair.</description>
-              <files>
-                <folder source="10 Nordic Warmaiden" destination="" priority="10" />
-              </files>
-              <typeDescriptor>
-                <dependencyType>
-                  <defaultType name="Optional" />
-                  <patterns>
-                    <pattern>
-                      <dependencies operator="And">
-                        <fileDependency file="Nordic Warmaiden Body Hair.esp" state="Active" />
-                      </dependencies>
-                      <type name="Recommended" />
-                    </pattern>
-                  </patterns>
-                </dependencyType>
-              </typeDescriptor>
+            <plugin name="Nordic Warmaiden Body Hair"><description>Enables female pubic, armpit, stomach, butt and back styles from Nordic Warmaiden Body Hair.</description><files><folder source="10 Nordic Warmaiden" destination="" priority="10" /></files><typeDescriptor><dependencyType><defaultType name="Optional" /><patterns><pattern><dependencies operator="And"><fileDependency file="Nordic Warmaiden Body Hair.esp" state="Active" /></dependencies><type name="Recommended" /></pattern></patterns></dependencyType></typeDescriptor></plugin>
+            <plugin name="HIMBO V3 Bodyhair Overlays for Racemenu"><description>Enables male arm, hand, armpit, butt, back, stomach, chest, leg and foot hair overlays from the HIMBO body-hair pack.</description><files><folder source="20 HIMBO" destination="" priority="20" /></files><typeDescriptor><dependencyType><defaultType name="Optional" /><patterns><pattern><dependencies operator="And"><fileDependency file="HIMBOBodyhairOverlay.esp" state="Active" /></dependencies><type name="Recommended" /></pattern></patterns></dependencyType></typeDescriptor></plugin>
+            <plugin name="Pubes Forever Female / Pubic Hairstyles All In One CBBE"><description>Enables the female pubic-hair overlays supplied by Pubes Forever Female / Pubic Hairstyles All In One CBBE.</description><files><folder source="30 Pubes Forever Female" destination="" priority="30" /></files><typeDescriptor><dependencyType><defaultType name="Optional" /><patterns><pattern><dependencies operator="And"><fileDependency file="AK_RM_PubicStyles_All_In_One.esp" state="Active" /></dependencies><type name="Recommended" /></pattern></patterns></dependencyType></typeDescriptor></plugin>
+            <plugin name="Pubes Forever Male"><description>Enables the male pubic-hair overlays supplied by Pubes Forever for Males.</description><files><folder source="40 Pubes Forever Male" destination="" priority="40" /></files><typeDescriptor><dependencyType><defaultType name="Optional" /><patterns><pattern><dependencies operator="And"><fileDependency file="AK_RM_PubicStyles_All_In_One_M.esp" state="Active" /></dependencies><type name="Recommended" /></pattern></patterns></dependencyType></typeDescriptor></plugin>
+            <plugin name="OPubes NG compatibility"><description>Installs the OPubes NG compatibility provider. Keep OPubes itself installed; BodyHairSliders does not redistribute its assets.</description><files><folder source="50 OPubes" destination="" priority="50" /></files><typeDescriptor><dependencyType><defaultType name="Optional" /><patterns><pattern><dependencies operator="And"><fileDependency file="OPubes.esp" state="Active" /></dependencies><type name="Recommended" /></pattern></patterns></dependencyType></typeDescriptor></plugin>
+          </plugins>
+        </group>
+      </optionalFileGroups>
+    </installStep>
+    <installStep name="RaceMenu overlay capacity">
+      <optionalFileGroups order="Explicit">
+        <group name="Increase RaceMenu overlay slots" type="SelectExactlyOne">
+          <plugins order="Explicit">
+            <plugin name="Yes - Extended overlay slots (Recommended)">
+              <description>Installs a minimal skee64_custom.ini with Body=20, Hands=10 and Feet=10 overlay slots. Recommended when BodyHairSliders reports no free RaceMenu overlay slots.</description>
+              <files><folder source="60 Extended Overlay Slots" destination="" priority="60" /></files>
+              <typeDescriptor><type name="Recommended" /></typeDescriptor>
             </plugin>
-            <plugin name="HIMBO V3 Bodyhair Overlays for Racemenu">
-              <description>Enables male arm, hand, armpit, butt, back, stomach, chest, leg and foot hair overlays from the HIMBO body-hair pack.</description>
-              <files>
-                <folder source="20 HIMBO" destination="" priority="20" />
-              </files>
-              <typeDescriptor>
-                <dependencyType>
-                  <defaultType name="Optional" />
-                  <patterns>
-                    <pattern>
-                      <dependencies operator="And">
-                        <fileDependency file="HIMBOBodyhairOverlay.esp" state="Active" />
-                      </dependencies>
-                      <type name="Recommended" />
-                    </pattern>
-                  </patterns>
-                </dependencyType>
-              </typeDescriptor>
-            </plugin>
-            <plugin name="Pubes Forever Female / Pubic Hairstyles All In One CBBE">
-              <description>Enables the female pubic-hair overlays supplied by Pubes Forever Female / Pubic Hairstyles All In One CBBE.</description>
-              <files>
-                <folder source="30 Pubes Forever Female" destination="" priority="30" />
-              </files>
-              <typeDescriptor>
-                <dependencyType>
-                  <defaultType name="Optional" />
-                  <patterns>
-                    <pattern>
-                      <dependencies operator="And">
-                        <fileDependency file="AK_RM_PubicStyles_All_In_One.esp" state="Active" />
-                      </dependencies>
-                      <type name="Recommended" />
-                    </pattern>
-                  </patterns>
-                </dependencyType>
-              </typeDescriptor>
-            </plugin>
-            <plugin name="Pubes Forever Male">
-              <description>Enables the male pubic-hair overlays supplied by Pubes Forever for Males.</description>
-              <files>
-                <folder source="40 Pubes Forever Male" destination="" priority="40" />
-              </files>
-              <typeDescriptor>
-                <dependencyType>
-                  <defaultType name="Optional" />
-                  <patterns>
-                    <pattern>
-                      <dependencies operator="And">
-                        <fileDependency file="AK_RM_PubicStyles_All_In_One_M.esp" state="Active" />
-                      </dependencies>
-                      <type name="Recommended" />
-                    </pattern>
-                  </patterns>
-                </dependencyType>
-              </typeDescriptor>
-            </plugin>
-            <plugin name="OPubes NG compatibility">
-              <description>Installs the OPubes NG compatibility provider. Keep OPubes itself installed; BodyHairSliders does not redistribute its assets.</description>
-              <files>
-                <folder source="50 OPubes" destination="" priority="50" />
-              </files>
-              <typeDescriptor>
-                <dependencyType>
-                  <defaultType name="Optional" />
-                  <patterns>
-                    <pattern>
-                      <dependencies operator="And">
-                        <fileDependency file="OPubes.esp" state="Active" />
-                      </dependencies>
-                      <type name="Recommended" />
-                    </pattern>
-                  </patterns>
-                </dependencyType>
-              </typeDescriptor>
+            <plugin name="No - Keep my existing RaceMenu overlay configuration">
+              <description>Does not install skee64_custom.ini. Choose this if another mod already manages that file and already provides enough Body/Hands/Feet overlay slots.</description>
+              <typeDescriptor><type name="Optional" /></typeDescriptor>
             </plugin>
           </plugins>
         </group>
