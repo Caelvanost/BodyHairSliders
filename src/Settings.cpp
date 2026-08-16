@@ -119,6 +119,7 @@ namespace BHS
                         rule.region = ruleEntry.value("region", "");
                         rule.sex = ruleEntry.value("sex", "any");
                         rule.prefix = ruleEntry.value("prefix", "");
+                        rule.excludePrefix = ruleEntry.value("excludePrefix", "");
                         rule.suffix = ruleEntry.value("suffix", ".dds");
                         rule.excludeSuffix = ruleEntry.value("excludeSuffix", "");
                         rule.pairDarkFair = ruleEntry.value("pairDarkFair", false);
@@ -140,14 +141,12 @@ namespace BHS
                 }
             };
 
-            // Backward compatibility with the pre-0.3 monolithic config.json format.
             if (root.contains("providers") && root.at("providers").is_array()) {
                 for (const auto& providerEntry : root.at("providers")) {
                     loadProviderEntry(providerEntry, "config.json");
                 }
             }
 
-            // v0.3+: FOMOD-selected providers are installed as individual JSON files.
             const std::filesystem::path providerDirectory("Data/SKSE/Plugins/BodyHairSliders/providers");
             std::error_code ec;
             if (std::filesystem::exists(providerDirectory, ec)) {
@@ -201,6 +200,18 @@ namespace BHS
 
             SKSE::log::info("Loaded {} providers ({} detected) with {} body-hair styles; PoC enabled={}",
                 providers.size(), detectedCount, styleCount, proofOfConceptEnabled);
+
+            constexpr std::array<std::string_view, 10> regions{
+                "pubic", "armpits", "chest", "stomach", "back",
+                "arms", "hands", "legs", "feet", "butt"
+            };
+            for (const auto region : regions) {
+                const auto male = GetStylesForRegion(region, "male").size();
+                const auto female = GetStylesForRegion(region, "female").size();
+                if (male > 0 || female > 0) {
+                    SKSE::log::info("Region '{}' styles: male={} female={}", region, male, female);
+                }
+            }
             return true;
         } catch (const std::exception& e) {
             SKSE::log::error("Failed to parse config.json: {}", e.what());
@@ -244,6 +255,9 @@ namespace BHS
                 if (!rule.prefix.empty() && !filename.starts_with(rule.prefix)) {
                     continue;
                 }
+                if (!rule.excludePrefix.empty() && filename.starts_with(rule.excludePrefix)) {
+                    continue;
+                }
 
                 matchingFiles.push_back(entry.path());
             }
@@ -253,7 +267,6 @@ namespace BHS
             });
 
             for (const auto& filePath : matchingFiles) {
-                const auto filename = filePath.filename().string();
                 auto stem = filePath.stem().string();
                 if (!rule.prefix.empty() && stem.starts_with(rule.prefix)) {
                     stem.erase(0, rule.prefix.size());
