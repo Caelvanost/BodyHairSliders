@@ -79,48 +79,117 @@ namespace BHS
                 proofOfConceptEnabled = false;
             }
 
-            if (root.contains("providers") && root.at("providers").is_array()) {
-                for (const auto& providerEntry : root.at("providers")) {
-                    Provider provider;
-                    provider.id = providerEntry.value("id", "");
-                    provider.name = providerEntry.value("name", provider.id);
-                    provider.plugin = providerEntry.value("plugin", "");
+            const auto loadProviderEntry = [this](const nlohmann::json& providerEntry, std::string_view source) {
+                if (!providerEntry.is_object()) {
+                    SKSE::log::warn("Ignoring non-object provider entry from {}", source);
+                    return;
+                }
 
-                    if (providerEntry.contains("styles") && providerEntry.at("styles").is_array()) {
-                        for (const auto& styleEntry : providerEntry.at("styles")) {
-                            OverlayStyle style;
-                            style.id = styleEntry.value("id", "");
-                            style.provider = provider.id;
-                            style.region = styleEntry.value("region", "");
-                            style.label = styleEntry.value("label", style.id);
-                            style.texture = styleEntry.value("texture", "");
-                            style.textureDark = styleEntry.value("textureDark", "");
-                            style.textureFair = styleEntry.value("textureFair", "");
-                            style.sex = styleEntry.value("sex", "any");
-                            style.type = styleEntry.value("type", "overlay");
-                            style.location = styleEntry.value("location", "body");
-                            provider.styles.push_back(std::move(style));
-                        }
+                Provider provider;
+                provider.id = providerEntry.value("id", "");
+                provider.name = providerEntry.value("name", provider.id);
+                provider.plugin = providerEntry.value("plugin", "");
+
+                if (provider.id.empty()) {
+                    SKSE::log::warn("Ignoring provider with empty id from {}", source);
+                    return;
+                }
+
+                if (providerEntry.contains("styles") && providerEntry.at("styles").is_array()) {
+                    for (const auto& styleEntry : providerEntry.at("styles")) {
+                        OverlayStyle style;
+                        style.id = styleEntry.value("id", "");
+                        style.provider = provider.id;
+                        style.region = styleEntry.value("region", "");
+                        style.label = styleEntry.value("label", style.id);
+                        style.texture = styleEntry.value("texture", "");
+                        style.textureDark = styleEntry.value("textureDark", "");
+                        style.textureFair = styleEntry.value("textureFair", "");
+                        style.sex = styleEntry.value("sex", "any");
+                        style.type = styleEntry.value("type", "overlay");
+                        style.location = styleEntry.value("location", "body");
+                        provider.styles.push_back(std::move(style));
                     }
+                }
 
-                    if (providerEntry.contains("scanRules") && providerEntry.at("scanRules").is_array()) {
-                        for (const auto& ruleEntry : providerEntry.at("scanRules")) {
-                            ScanRule rule;
-                            rule.directory = ruleEntry.value("directory", "");
-                            rule.region = ruleEntry.value("region", "");
-                            rule.sex = ruleEntry.value("sex", "any");
-                            rule.prefix = ruleEntry.value("prefix", "");
-                            rule.suffix = ruleEntry.value("suffix", ".dds");
-                            rule.excludeSuffix = ruleEntry.value("excludeSuffix", "");
-                            rule.pairDarkFair = ruleEntry.value("pairDarkFair", false);
-                            rule.location = ruleEntry.value("location", "body");
-                            provider.scanRules.push_back(std::move(rule));
-                        }
+                if (providerEntry.contains("scanRules") && providerEntry.at("scanRules").is_array()) {
+                    for (const auto& ruleEntry : providerEntry.at("scanRules")) {
+                        ScanRule rule;
+                        rule.directory = ruleEntry.value("directory", "");
+                        rule.region = ruleEntry.value("region", "");
+                        rule.sex = ruleEntry.value("sex", "any");
+                        rule.prefix = ruleEntry.value("prefix", "");
+                        rule.suffix = ruleEntry.value("suffix", ".dds");
+                        rule.excludeSuffix = ruleEntry.value("excludeSuffix", "");
+                        rule.pairDarkFair = ruleEntry.value("pairDarkFair", false);
+                        rule.location = ruleEntry.value("location", "body");
+                        provider.scanRules.push_back(std::move(rule));
                     }
+                }
 
-                    ScanProvider(provider);
+                ScanProvider(provider);
+
+                const auto existing = std::find_if(providers.begin(), providers.end(), [&](const Provider& candidate) {
+                    return candidate.id == provider.id;
+                });
+                if (existing != providers.end()) {
+                    SKSE::log::info("Provider '{}' from {} replaces an earlier definition", provider.id, source);
+                    *existing = std::move(provider);
+                } else {
                     providers.push_back(std::move(provider));
                 }
+            };
+
+            // Backward compatibility with the pre-0.3 monolithic config.json format.
+            if (root.contains("providers") && root.at("providers").is_array()) {
+                for (const auto& providerEntry : root.at("providers")) {
+                    loadProviderEntry(providerEntry, "config.json");
+                }
+            }
+
+            // v0.3+: FOMOD-selected providers are installed as individual JSON files.
+            const std::filesystem::path providerDirectory("Data/SKSE/Plugins/BodyHairSliders/providers");
+            std::error_code ec;
+            if (std::filesystem::exists(providerDirectory, ec)) {
+                std::vector<std::filesystem::path> providerFiles;
+                for (const auto& entry : std::filesystem::directory_iterator(providerDirectory, ec)) {
+                    if (ec) {
+                        break;
+                    }
+                    if (entry.is_regular_file() && EndsWithInsensitive(entry.path().filename().string(), ".json")) {
+                        providerFiles.push_back(entry.path());
+                    }
+                }
+
+                std::sort(providerFiles.begin(), providerFiles.end(), [](const auto& lhs, const auto& rhs) {
+                    return lhs.generic_string() < rhs.generic_string();
+                });
+
+                for (const auto& providerPath : providerFiles) {
+                    std::ifstream providerFile(providerPath);
+                    if (!providerFile) {
+                        SKSE::log::warn("Could not open provider config {}", providerPath.generic_string());
+                        continue;
+                    }
+
+                    try {
+                        nlohmann::json providerRoot;
+                        providerFile >> providerRoot;
+                        const auto source = providerPath.generic_string();
+
+                        if (providerRoot.contains("providers") && providerRoot.at("providers").is_array()) {
+                            for (const auto& providerEntry : providerRoot.at("providers")) {
+                                loadProviderEntry(providerEntry, source);
+                            }
+                        } else {
+                            loadProviderEntry(providerRoot, source);
+                        }
+                    } catch (const std::exception& e) {
+                        SKSE::log::error("Failed to parse provider config {}: {}", providerPath.generic_string(), e.what());
+                    }
+                }
+            } else if (ec) {
+                SKSE::log::warn("Could not inspect provider directory {}: {}", providerDirectory.generic_string(), ec.message());
             }
 
             std::size_t styleCount = 0;
@@ -156,8 +225,12 @@ namespace BHS
 
             provider.detected = true;
 
+            std::vector<std::filesystem::path> matchingFiles;
             for (const auto& entry : std::filesystem::directory_iterator(directory, ec)) {
-                if (ec || !entry.is_regular_file()) {
+                if (ec) {
+                    break;
+                }
+                if (!entry.is_regular_file()) {
                     continue;
                 }
 
@@ -172,7 +245,16 @@ namespace BHS
                     continue;
                 }
 
-                auto stem = entry.path().stem().string();
+                matchingFiles.push_back(entry.path());
+            }
+
+            std::sort(matchingFiles.begin(), matchingFiles.end(), [](const auto& lhs, const auto& rhs) {
+                return lhs.filename().generic_string() < rhs.filename().generic_string();
+            });
+
+            for (const auto& filePath : matchingFiles) {
+                const auto filename = filePath.filename().string();
+                auto stem = filePath.stem().string();
                 if (!rule.prefix.empty() && stem.starts_with(rule.prefix)) {
                     stem.erase(0, rule.prefix.size());
                 }
@@ -189,7 +271,7 @@ namespace BHS
                 }
 
                 const auto key = provider.id + ":" + rule.region + ":" + rule.sex + ":" + NormalizeId(stem);
-                const auto texturePath = entry.path().generic_string();
+                const auto texturePath = filePath.generic_string();
 
                 if (rule.pairDarkFair && !sourceColor.empty()) {
                     auto it = pairedStyles.find(key);
