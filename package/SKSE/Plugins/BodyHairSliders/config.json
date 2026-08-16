@@ -5,57 +5,5 @@
     "region": "pubic",
     "sex": "female",
     "styleIndex": 0
-  },
-  "providers": [
-    {
-      "id": "nordic_warmaiden",
-      "name": "Nordic Warmaiden Body Hair",
-      "plugin": "Nordic Warmaiden Body Hair.esp",
-      "scanRules": [
-        { "directory": "Data/Textures/Actors/Nordic Warmaiden Hair", "region": "pubic", "sex": "female", "prefix": "dePog - Pubes - ", "suffix": ".dds", "pairDarkFair": true, "location": "body" },
-        { "directory": "Data/Textures/Actors/Nordic Warmaiden Hair", "region": "armpits", "sex": "female", "prefix": "dePog - Pits - ", "suffix": ".dds", "pairDarkFair": true, "location": "body" },
-        { "directory": "Data/Textures/Actors/Nordic Warmaiden Hair", "region": "stomach", "sex": "female", "prefix": "dePog - Navel - ", "suffix": ".dds", "pairDarkFair": true, "location": "body" },
-        { "directory": "Data/Textures/Actors/Nordic Warmaiden Hair", "region": "butt", "sex": "female", "prefix": "dePog - Crack - ", "suffix": ".dds", "pairDarkFair": true, "location": "body" },
-        { "directory": "Data/Textures/Actors/Nordic Warmaiden Hair", "region": "back", "sex": "female", "prefix": "dePog - Beast - ", "suffix": ".dds", "pairDarkFair": true, "location": "body" }
-      ]
-    },
-    {
-      "id": "pubic_hairstyles_cbbe",
-      "name": "Pubic Hairstyles All In One CBBE / Pubes Forever Female",
-      "plugin": "AK_RM_PubicStyles_All_In_One.esp",
-      "scanRules": [
-        { "directory": "Data/textures/actors/character/ak_rm_pubic_hair_all_in_one", "region": "pubic", "sex": "female", "prefix": "ak_", "suffix": ".dds", "excludeSuffix": "M.dds", "location": "body" }
-      ]
-    },
-    {
-      "id": "pubes_forever_male",
-      "name": "Pubes Forever Male",
-      "plugin": "AK_RM_PubicStyles_All_In_One_M.esp",
-      "scanRules": [
-        { "directory": "Data/textures/actors/character/ak_rm_pubic_hair_all_in_one", "region": "pubic", "sex": "male", "prefix": "ak_", "suffix": "M.dds", "location": "body" }
-      ]
-    },
-    {
-      "id": "himbo_bodyhair",
-      "name": "HIMBO V3 Bodyhair Overlays for Racemenu",
-      "plugin": "HIMBOBodyhairOverlay.esp",
-      "scanRules": [
-        { "directory": "Data/Textures/actors/character/character assets/overlays", "region": "arms", "sex": "male", "prefix": "HIMBO_BodyHair_Arm", "suffix": ".dds", "location": "body" },
-        { "directory": "Data/Textures/actors/character/character assets/overlays", "region": "hands", "sex": "male", "prefix": "HIMBO_BodyHair_HandsArm", "suffix": ".dds", "location": "hand" },
-        { "directory": "Data/Textures/actors/character/character assets/overlays", "region": "armpits", "sex": "male", "prefix": "HIMBO_BodyHair_Armpit", "suffix": ".dds", "location": "body" },
-        { "directory": "Data/Textures/actors/character/character assets/overlays", "region": "butt", "sex": "male", "prefix": "HIMBO_BodyHair_Ass", "suffix": ".dds", "location": "body" },
-        { "directory": "Data/Textures/actors/character/character assets/overlays", "region": "back", "sex": "male", "prefix": "HIMBO_BodyHair_Back", "suffix": ".dds", "location": "body" },
-        { "directory": "Data/Textures/actors/character/character assets/overlays", "region": "stomach", "sex": "male", "prefix": "HIMBO_BodyHair_Belly", "suffix": ".dds", "location": "body" },
-        { "directory": "Data/Textures/actors/character/character assets/overlays", "region": "chest", "sex": "male", "prefix": "HIMBO_BodyHair_Chest", "suffix": ".dds", "location": "body" },
-        { "directory": "Data/Textures/actors/character/character assets/overlays", "region": "legs", "sex": "male", "prefix": "HIMBO_BodyHair_Legs", "suffix": ".dds", "location": "body" },
-        { "directory": "Data/Textures/actors/character/character assets/overlays", "region": "feet", "sex": "male", "prefix": "HIMBO_BodyHair_BodyFeet", "suffix": ".dds", "location": "feet" }
-      ]
-    },
-    {
-      "id": "opubes",
-      "name": "OPubes NG compatibility bridge",
-      "plugin": "OPubes.esp",
-      "scanRules": []
-    }
-  ]
+  }
 }
