@@ -1,0 +1,6 @@
+{
+  "id": "opubes",
+  "name": "OPubes NG compatibility bridge",
+  "plugin": "OPubes.esp",
+  "scanRules": []
+}
