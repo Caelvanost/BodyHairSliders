@@ -14,7 +14,18 @@ namespace BHS
         void Refresh(RE::Actor* actor);
 
     private:
-        std::optional<std::uint32_t> FindOrReserveBodySlot(RE::Actor* actor, std::string_view region, bool isFemale);
-        std::unordered_map<std::uint32_t, std::unordered_map<std::string, std::uint32_t>> slots_;
+        struct ReservedSlot
+        {
+            std::uint32_t index{ 0 };
+            std::string location{ "body" };
+        };
+
+        std::optional<std::uint32_t> FindOrReserveSlot(
+            RE::Actor* actor,
+            std::string_view region,
+            std::string_view location,
+            bool isFemale);
+
+        std::unordered_map<std::uint32_t, std::unordered_map<std::string, ReservedSlot>> slots_;
     };
 }
