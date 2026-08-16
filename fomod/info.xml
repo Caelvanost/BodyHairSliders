@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fomod>
+  <Name>BodyHairSliders</Name>
+  <Author>Caelvanost</Author>
+  <Version>@VERSION@</Version>
+  <Description>Unified RaceMenu body-hair sliders with optional provider packs selected through the FOMOD installer.</Description>
+</fomod>
