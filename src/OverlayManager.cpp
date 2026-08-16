@@ -37,6 +37,29 @@ namespace BHS
             float value_;
         };
 
+        class StringCaptureVariant final : public SKEE::IOverrideInterface::GetVariant
+        {
+        public:
+            void Int(SKEE::i32) override {}
+            void Float(float) override {}
+            void String(const char* value) override
+            {
+                if (value) {
+                    value_ = value;
+                    hasValue_ = true;
+                }
+            }
+            void Bool(bool) override {}
+            void TextureSet(const RE::BGSTextureSet*) override {}
+
+            [[nodiscard]] bool HasValue() const { return hasValue_; }
+            [[nodiscard]] const std::string& Value() const { return value_; }
+
+        private:
+            std::string value_;
+            bool hasValue_{ false };
+        };
+
         SKEE::IOverlayInterface::OverlayLocation ToOverlayLocation(std::string_view location)
         {
             if (location == "hand" || location == "hands") {
@@ -58,6 +81,18 @@ namespace BHS
                 result.replace(pos, 2, std::to_string(index));
             }
             return result;
+        }
+
+        std::string NormalizeTexturePath(std::string path)
+        {
+            std::replace(path.begin(), path.end(), '/', '\\');
+            std::transform(path.begin(), path.end(), path.begin(), [](unsigned char c) {
+                return static_cast<char>(std::tolower(c));
+            });
+            if (path.starts_with("data\\")) {
+                path.erase(0, 5);
+            }
+            return path;
         }
 
         std::string ToSKEETexturePath(std::string path)
@@ -94,6 +129,64 @@ namespace BHS
             }
             return style.textureFair;
         }
+
+        bool MatchesKnownTexture(std::string_view candidate, const OverlayStyle& style)
+        {
+            const auto normalizedCandidate = NormalizeTexturePath(std::string(candidate));
+            for (const auto* texture : { &style.texture, &style.textureDark, &style.textureFair }) {
+                if (!texture->empty() && NormalizeTexturePath(*texture) == normalizedCandidate) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        bool IsKnownRegionTexture(
+            std::string_view texture,
+            std::string_view region,
+            std::string_view location,
+            bool isFemale)
+        {
+            const auto sex = isFemale ? "female"sv : "male"sv;
+            const auto requestedLocation = ToOverlayLocation(location);
+            const auto styles = Settings::GetSingleton().GetStylesForRegion(region, sex);
+            return std::ranges::any_of(styles, [&](const OverlayStyle* style) {
+                return style &&
+                    ToOverlayLocation(style->location) == requestedLocation &&
+                    MatchesKnownTexture(texture, *style);
+            });
+        }
+
+        std::optional<std::string> ReadNodeTexture(
+            SKEE::IOverrideInterface* overrideInterface,
+            RE::Actor* actor,
+            bool isFemale,
+            const std::string& nodeName)
+        {
+            StringCaptureVariant capture;
+            if (overrideInterface->GetNodeOverride(
+                    actor,
+                    isFemale,
+                    nodeName.c_str(),
+                    SKEE::kShaderTexture,
+                    0,
+                    capture) &&
+                capture.HasValue()) {
+                return capture.Value();
+            }
+            return std::nullopt;
+        }
+
+        void RemoveNodeProperties(
+            SKEE::IOverrideInterface* overrideInterface,
+            RE::Actor* actor,
+            bool isFemale,
+            const std::string& nodeName)
+        {
+            overrideInterface->RemoveNodeOverride(actor, isFemale, nodeName.c_str(), SKEE::kShaderTexture, 0);
+            overrideInterface->RemoveNodeOverride(actor, isFemale, nodeName.c_str(), SKEE::kShaderTintColor, kUnindexedProperty);
+            overrideInterface->RemoveNodeOverride(actor, isFemale, nodeName.c_str(), SKEE::kShaderAlpha, kUnindexedProperty);
+        }
     }
 
     OverlayManager& OverlayManager::GetSingleton()
@@ -128,18 +221,66 @@ namespace BHS
             SKEE::IOverlayInterface::OverlayType::Normal,
             overlayLocation);
 
+        std::optional<std::uint32_t> freeSlot;
+        std::optional<std::uint32_t> reclaimedSlot;
+        std::vector<std::uint32_t> staleDuplicates;
+
         for (std::uint32_t i = count; i-- > 0;) {
             const auto nodeName = MakeNodeName(format, i);
             if (!overrideInterface->HasNodeOverride(actor, isFemale, nodeName.c_str(), SKEE::kShaderTexture, 0)) {
-                actorSlots.emplace(std::string(region), ReservedSlot{ i, std::string(location) });
-                SKSE::log::info("Reserved RaceMenu {} overlay slot {} ({}) for region '{}'",
-                    location, i, nodeName, region);
-                return i;
+                if (!freeSlot) {
+                    freeSlot = i;
+                }
+                continue;
+            }
+
+            const auto texture = ReadNodeTexture(overrideInterface, actor, isFemale, nodeName);
+            if (!texture || !IsKnownRegionTexture(*texture, region, location, isFemale)) {
+                continue;
+            }
+
+            if (!reclaimedSlot) {
+                reclaimedSlot = i;
+            } else {
+                staleDuplicates.push_back(i);
             }
         }
 
-        SKSE::log::error("No free RaceMenu {} overlay slot for region '{}'; increase the matching overlay count in skee64.ini",
-            location, region);
+        if (reclaimedSlot) {
+            for (const auto duplicate : staleDuplicates) {
+                const auto duplicateNode = MakeNodeName(format, duplicate);
+                RemoveNodeProperties(overrideInterface, actor, isFemale, duplicateNode);
+                SKSE::log::info(
+                    "Removed stale duplicate BodyHairSliders {} overlay slot {} ({}) for region '{}'",
+                    location,
+                    duplicate,
+                    duplicateNode,
+                    region);
+            }
+
+            actorSlots.emplace(std::string(region), ReservedSlot{ *reclaimedSlot, std::string(location) });
+            SKSE::log::info(
+                "Reclaimed existing BodyHairSliders {} overlay slot {} ({}) for region '{}'",
+                location,
+                *reclaimedSlot,
+                MakeNodeName(format, *reclaimedSlot),
+                region);
+            return reclaimedSlot;
+        }
+
+        if (freeSlot) {
+            const auto nodeName = MakeNodeName(format, *freeSlot);
+            actorSlots.emplace(std::string(region), ReservedSlot{ *freeSlot, std::string(location) });
+            SKSE::log::info("Reserved RaceMenu {} overlay slot {} ({}) for region '{}'",
+                location, *freeSlot, nodeName, region);
+            return freeSlot;
+        }
+
+        SKSE::log::error(
+            "No free RaceMenu {} overlay slot for region '{}' (configured normal slots={}); increase the matching overlay count in skee64.ini/skee64_custom.ini",
+            location,
+            region,
+            count);
         return std::nullopt;
     }
 
@@ -209,36 +350,66 @@ namespace BHS
             return false;
         }
 
+        bool removed = false;
         auto actorIt = slots_.find(actor->GetFormID());
-        if (actorIt == slots_.end()) {
-            return false;
-        }
-        auto slotIt = actorIt->second.find(std::string(region));
-        if (slotIt == actorIt->second.end()) {
-            return false;
+        if (actorIt != slots_.end()) {
+            auto slotIt = actorIt->second.find(std::string(region));
+            if (slotIt != actorIt->second.end()) {
+                const auto overlayLocation = ToOverlayLocation(slotIt->second.location);
+                const auto* format = overlay->GetOverlayFormat(
+                    SKEE::IOverlayInterface::OverlayType::Normal,
+                    overlayLocation);
+                const auto nodeName = MakeNodeName(format, slotIt->second.index);
+
+                for (bool female : { false, true }) {
+                    RemoveNodeProperties(overrideInterface, actor, female, nodeName);
+                }
+                actorIt->second.erase(slotIt);
+                removed = true;
+            }
         }
 
-        const auto overlayLocation = ToOverlayLocation(slotIt->second.location);
-        const auto* format = overlay->GetOverlayFormat(
-            SKEE::IOverlayInterface::OverlayType::Normal,
-            overlayLocation);
-        const auto nodeName = MakeNodeName(format, slotIt->second.index);
+        // Also remove stale BodyHairSliders overrides left by an earlier game session,
+        // where the in-memory slot ownership map no longer exists.
+        for (const auto location : { "body"sv, "hand"sv, "feet"sv }) {
+            const auto overlayLocation = ToOverlayLocation(location);
+            const auto count = overlay->GetOverlayCount(
+                SKEE::IOverlayInterface::OverlayType::Normal,
+                overlayLocation);
+            const auto* format = overlay->GetOverlayFormat(
+                SKEE::IOverlayInterface::OverlayType::Normal,
+                overlayLocation);
 
-        // Remove for both sexes so a character sex/style change cannot leave stale data.
-        for (bool female : { false, true }) {
-            overrideInterface->RemoveNodeOverride(actor, female, nodeName.c_str(), SKEE::kShaderTexture, 0);
-            overrideInterface->RemoveNodeOverride(actor, female, nodeName.c_str(), SKEE::kShaderTintColor, kUnindexedProperty);
-            overrideInterface->RemoveNodeOverride(actor, female, nodeName.c_str(), SKEE::kShaderAlpha, kUnindexedProperty);
+            for (std::uint32_t i = 0; i < count; ++i) {
+                const auto nodeName = MakeNodeName(format, i);
+                for (bool female : { false, true }) {
+                    if (!overrideInterface->HasNodeOverride(actor, female, nodeName.c_str(), SKEE::kShaderTexture, 0)) {
+                        continue;
+                    }
+                    const auto texture = ReadNodeTexture(overrideInterface, actor, female, nodeName);
+                    if (texture && IsKnownRegionTexture(*texture, region, location, female)) {
+                        RemoveNodeProperties(overrideInterface, actor, female, nodeName);
+                        removed = true;
+                        SKSE::log::info(
+                            "Cleared stale BodyHairSliders {} overlay slot {} ({}) for region '{}'",
+                            location,
+                            i,
+                            nodeName,
+                            region);
+                    }
+                }
+            }
         }
-        overrideInterface->SetNodeProperties(actor, true);
-        actorIt->second.erase(slotIt);
 
-        if (auto* update = integration.ActorUpdate()) {
-            update->AddOverlayUpdate(actor->GetFormID());
-            update->AddNodeOverrideUpdate(actor->GetFormID());
-            update->Flush();
+        if (removed) {
+            overrideInterface->SetNodeProperties(actor, true);
+            if (auto* update = integration.ActorUpdate()) {
+                update->AddOverlayUpdate(actor->GetFormID());
+                update->AddNodeOverrideUpdate(actor->GetFormID());
+                update->Flush();
+            }
         }
-        return true;
+        return removed;
     }
 
     void OverlayManager::Refresh(RE::Actor* actor)
