@@ -28,7 +28,9 @@ $ProviderPackages = @(
     @{ Stage = "20 HIMBO"; File = "himbo.json" },
     @{ Stage = "30 Pubes Forever Female"; File = "pubes_forever_female.json" },
     @{ Stage = "40 Pubes Forever Male"; File = "pubes_forever_male.json" },
-    @{ Stage = "50 OPubes"; File = "opubes.json" }
+    @{ Stage = "50 OPubes"; File = "opubes.json" },
+    @{ Stage = "60 More Pubes for SlaveTats"; File = "more_pubes_slavetats.json" },
+    @{ Stage = "70 Natural Pubic Hairstyles"; File = "natural_pubic_hairstyles.json" }
 )
 
 $OverlayCapacityIni = Join-Path $OptionalSource "skee64_custom.ini"
@@ -56,7 +58,7 @@ foreach ($Provider in $ProviderPackages) {
     Copy-Item (Join-Path $ProviderSource $Provider.File) (Join-Path $Destination $Provider.File) -Force
 }
 
-$CapacityStage = Join-Path $Stage "60 Extended Overlay Slots\SKSE\Plugins"
+$CapacityStage = Join-Path $Stage "80 Extended Overlay Slots\SKSE\Plugins"
 New-Item -ItemType Directory -Force -Path $CapacityStage | Out-Null
 Copy-Item $OverlayCapacityIni (Join-Path $CapacityStage "skee64_custom.ini") -Force
 
@@ -97,7 +99,9 @@ try {
         "30 Pubes Forever Female/SKSE/Plugins/BodyHairSliders/providers/pubes_forever_female.json",
         "40 Pubes Forever Male/SKSE/Plugins/BodyHairSliders/providers/pubes_forever_male.json",
         "50 OPubes/SKSE/Plugins/BodyHairSliders/providers/opubes.json",
-        "60 Extended Overlay Slots/SKSE/Plugins/skee64_custom.ini",
+        "60 More Pubes for SlaveTats/SKSE/Plugins/BodyHairSliders/providers/more_pubes_slavetats.json",
+        "70 Natural Pubic Hairstyles/SKSE/Plugins/BodyHairSliders/providers/natural_pubic_hairstyles.json",
+        "80 Extended Overlay Slots/SKSE/Plugins/skee64_custom.ini",
         "fomod/ModuleConfig.xml",
         "fomod/info.xml"
     )
