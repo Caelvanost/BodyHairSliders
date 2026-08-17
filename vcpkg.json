@@ -1,6 +1,6 @@
 {
   "name": "body-hair-sliders",
-  "version-string": "0.7.1",
+  "version-string": "0.7.2",
   "dependencies": [
     "commonlibsse-ng",
     "nlohmann-json"
