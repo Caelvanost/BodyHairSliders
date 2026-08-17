@@ -4,6 +4,8 @@ BodyHairSliders is a Skyrim SE/AE SKSE plugin that exposes compatible third-part
 
 The mod does **not** redistribute body-hair textures or meshes. Supported body-hair mods remain external asset providers.
 
+> **Skyrim 1.5.97 test branch:** this branch contains the experimental legacy RaceMenu/SKEE compatibility backend. Current test version: **v0.7.2**.
+
 ## RaceMenu controls
 
 Starting with **v0.5.0**, BodyHairSliders integrates directly into RaceMenu's native **Hair** category instead of creating a separate tab.
@@ -32,7 +34,7 @@ The UI location is independent from the SKEE render location: HIMBO arms/back/be
 
 ## Supported providers
 
-The **v0.7.1** FOMOD supports:
+The **v0.7.2** test FOMOD supports:
 
 - Nordic Warmaiden Body Hair
 - HIMBO V3 Bodyhair Overlays for Racemenu
@@ -147,7 +149,7 @@ Modern SKEE exposes the v2 wrapper ABI. BodyHairSliders uses the native C++ inte
 
 ### Legacy RaceMenu / Skyrim 1.5.97
 
-**v0.7.1 adds a compatibility path for the legacy SKEE v1 ABI used by RaceMenu 0.4.16-era Skyrim 1.5.97 setups.**
+**v0.7.1 introduced a compatibility path for the legacy SKEE v1 ABI used by RaceMenu 0.4.16-era Skyrim 1.5.97 setups.**
 
 The old SKEE C++ `Overlay` and `Override` vtables are not ABI-compatible with the modern wrapper API. Earlier BodyHairSliders builds could therefore dispatch a modern method through an old vtable and crash.
 
@@ -159,7 +161,9 @@ Expected diagnostic line on that backend:
 SKEE acquired: Overlay v1 Override v1 ActorUpdate v0 backend=legacy-papyrus
 ```
 
-This compatibility path is implemented from RaceMenu's official legacy API and requires field validation on an actual 1.5.97 installation before being marked fully tested.
+**v0.7.2** fixes a Papyrus compiler name collision in this legacy frontend by avoiding the reserved/known `Location` identifier and also hardens `build_release.bat` so packaging stops immediately if either required `.pex` was not generated.
+
+This compatibility path requires field validation on an actual 1.5.97 installation before being marked fully tested.
 
 BodyHairSliders looks for existing supported overlay textures before reserving a new slot. This allows saved RaceMenu overlays to be detected and reclaimed instead of duplicated on both backends.
 
@@ -192,7 +196,7 @@ Runtime:
 - RaceMenu / SKEE
 - one or more supported body-hair provider mods selected in the FOMOD
 
-For Skyrim **1.5.97**, use the matching SKSE/RaceMenu/Address Library versions for that runtime. v0.7.1 contains the legacy RaceMenu/SKEE compatibility backend described above.
+For Skyrim **1.5.97**, use the matching SKSE/RaceMenu/Address Library versions for that runtime. This branch contains the legacy RaceMenu/SKEE compatibility backend described above.
 
 Development/build:
 
@@ -204,9 +208,9 @@ Development/build:
 
 ## Installation
 
-1. Install SKSE64, Address Library and RaceMenu versions matching your Skyrim runtime.
+1. Install SKSE64, Address Library and RaceMenu versions matching Skyrim 1.5.97.
 2. Install one or more supported body-hair provider mods.
-3. Install `BodyHairSliders-v0.7.1-FOMOD.zip` with Vortex or another FOMOD-capable mod manager.
+3. Install `BodyHairSliders-v0.7.2-SE-1.5.97-TEST-FOMOD.zip` with Vortex or another FOMOD-capable mod manager.
 4. Select the body-hair providers actually installed in your setup. For Natural Pubic Hairstyles, choose the standard option for standard 2K/4K or the UBE option for UBE 2K/4K.
 5. Select the optional extended overlay-slot configuration if your current RaceMenu setup does not already provide enough Body/Hands/Feet overlay slots.
 6. Enable `BodyHairSliders.esp`.
@@ -254,10 +258,10 @@ package/BodyHairSliders.esp
 package/SKSE/Plugins/BodyHairSliders.dll
 package/Scripts/BodyHairSliders.pex
 package/Scripts/BodyHairSlidersRaceMenu.pex
-dist/BodyHairSliders-v0.7.1-FOMOD.zip
+dist/BodyHairSliders-v0.7.2-SE-1.5.97-TEST-FOMOD.zip
 ```
 
-## Current state: v0.7.1
+## Current state: v0.7.2
 
 Implemented:
 
@@ -282,6 +286,11 @@ Implemented:
 - optional expanded RaceMenu overlay capacity;
 - verified FOMOD archive packaging.
 
+### v0.7.2
+
+- Fixed Papyrus compilation on the 1.5.97 test branch by renaming the legacy `location` identifier to `slotLocation`.
+- Made `build_release.bat` explicitly verify `BodyHairSliders.pex` and `BodyHairSlidersRaceMenu.pex` before packaging.
+
 ### v0.7.1
 
 - Prevented modern SKEE wrapper calls from being made through legacy RaceMenu/SKEE v1 vtables.
@@ -291,6 +300,6 @@ Implemented:
 
 Planned:
 
-- field validation of the v0.7.1 legacy backend on Skyrim 1.5.97;
+- field validation of the legacy backend on Skyrim 1.5.97;
 - additional persistence/reapply hardening for unusual appearance refresh cases;
 - stable synchronization API for MorphSyncTogether or other multiplayer integrations.
