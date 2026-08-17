@@ -31,7 +31,7 @@ set "PAPYRUS_VANILLA=%SKYRIM_DIR%\Data\Source\Scripts"
 set "PAPYRUS_SRC=%CD%\papyrus"
 set "PAPYRUS_STUBS=%CD%\compiler_stubs"
 set "PAPYRUS_OUT=%CD%\package\Scripts"
-set "ZIP_PATH=dist\BodyHairSliders-v%BHS_VERSION%-FOMOD.zip"
+set "ZIP_PATH=dist\BodyHairSliders-v%BHS_VERSION%-SE-1.5.97-TEST-FOMOD.zip"
 
 if not exist "%PAPYRUS_COMPILER%" (
   echo [ERROR] PapyrusCompiler.exe not found:
@@ -62,7 +62,7 @@ if not exist "package\Scripts" mkdir "package\Scripts"
 if not exist "package\Scripts\Source" mkdir "package\Scripts\Source"
 if not exist "dist" mkdir "dist"
 
-echo Building BodyHairSliders v%BHS_VERSION%
+echo Building BodyHairSliders v%BHS_VERSION% - Skyrim 1.5.97 TEST
 echo [1/5] Configuring C++...
 cmake -S . -B build ^
   -DCMAKE_BUILD_TYPE=Release ^
