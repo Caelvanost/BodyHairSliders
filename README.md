@@ -32,7 +32,7 @@ The UI location is independent from the SKEE render location: HIMBO arms/back/be
 
 ## Supported providers
 
-The **v0.6.0** FOMOD supports:
+The **v0.7.0** FOMOD supports:
 
 - Nordic Warmaiden Body Hair
 - HIMBO V3 Bodyhair Overlays for Racemenu
@@ -40,7 +40,8 @@ The **v0.6.0** FOMOD supports:
 - Pubes Forever for Males
 - OPubes NG compatibility
 - More Pubes for SlaveTats
-- Natural Pubic Hairstyles
+- Natural Pubic Hairstyles — standard 2K/4K variants
+- Natural Pubic Hairstyles - UBE — UBE 2K/4K variants
 
 Select only the providers that are actually installed in the current Skyrim setup.
 
@@ -98,7 +99,7 @@ OPubes NG is treated as an integration provider. Its assets remain external.
 
 ### More Pubes for SlaveTats
 
-v0.6.0 adds the **48 female pubic-hair textures** from More Pubes for SlaveTats as normal BodyHairSliders `Pubic Hair` choices.
+v0.6.0 added the **48 female pubic-hair textures** from More Pubes for SlaveTats as normal BodyHairSliders `Pubic Hair` choices.
 
 The provider reads the original texture pack from:
 
@@ -112,15 +113,25 @@ The original SlaveTats JSON names are preserved as slider style labels, includin
 
 ### Natural Pubic Hairstyles
 
-v0.6.0 adds the **65 female body-paint pubic hairstyles** supplied by Natural Pubic Hairstyles.
-
-Styles are scanned from:
+The standard Natural Pubic Hairstyles provider supports both **2K and 4K** variants. It scans the 65 female styles from:
 
 ```text
 Data/Textures/Actors/Character/PubicHairStyles/
 ```
 
 using the `PubicHairStyles-*.dds` files. `NaturalPubicHairstyles.esp` is used as the provider detection plugin.
+
+### Natural Pubic Hairstyles - UBE
+
+v0.7.0 adds support for the **UBE 2K/4K** Natural Pubic Hairstyles variants. They expose the same 65 logical styles but use a separate UBE texture directory:
+
+```text
+Data/Textures/Actors/Character/UBE_PubicHairStyles/
+```
+
+The provider scans the same `PubicHairStyles-*.dds` naming scheme and uses `UBENaturalPubicHairstyles.esp` for detection.
+
+The standard and UBE providers are separate FOMOD choices so users should select only the variant family actually installed for their body setup.
 
 ## SKEE / NiOverride integration
 
@@ -175,8 +186,8 @@ Development/build:
 
 1. Install SKSE64, Address Library and RaceMenu.
 2. Install one or more supported body-hair provider mods.
-3. Install `BodyHairSliders-v0.6.0-FOMOD.zip` with Vortex or another FOMOD-capable mod manager.
-4. Select the body-hair providers actually installed in your setup.
+3. Install `BodyHairSliders-v0.7.0-FOMOD.zip` with Vortex or another FOMOD-capable mod manager.
+4. Select the body-hair providers actually installed in your setup. For Natural Pubic Hairstyles, choose the standard option for standard 2K/4K or the UBE option for UBE 2K/4K.
 5. Select the optional extended overlay-slot configuration if your current RaceMenu setup does not already provide enough Body/Hands/Feet overlay slots.
 6. Enable `BodyHairSliders.esp`.
 7. Launch Skyrim and open RaceMenu (`showracemenu`).
@@ -223,10 +234,10 @@ package/BodyHairSliders.esp
 package/SKSE/Plugins/BodyHairSliders.dll
 package/Scripts/BodyHairSliders.pex
 package/Scripts/BodyHairSlidersRaceMenu.pex
-dist/BodyHairSliders-v0.6.0-FOMOD.zip
+dist/BodyHairSliders-v0.7.0-FOMOD.zip
 ```
 
-## Current state: v0.6.0
+## Current state: v0.7.0
 
 Implemented:
 
@@ -236,7 +247,8 @@ Implemented:
 - modular FOMOD provider selection;
 - Nordic Warmaiden, HIMBO, Pubes Forever Female/Male and OPubes NG provider support;
 - More Pubes for SlaveTats support with 48 named female styles;
-- Natural Pubic Hairstyles support with 65 female styles;
+- Natural Pubic Hairstyles standard 2K/4K support with 65 female styles;
+- Natural Pubic Hairstyles UBE 2K/4K support with 65 female styles;
 - deterministic provider/style ordering;
 - case-insensitive region/sex/location lookup;
 - SKEE Body, Hand and Feet overlay rendering;
