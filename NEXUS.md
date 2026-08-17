@@ -1,4 +1,4 @@
-# Nexus Mods publication pack — BodyHairSliders v0.6.0
+# Nexus Mods publication pack — BodyHairSliders v0.7.0
 
 ## Mod name
 
@@ -56,7 +56,7 @@ If the character already uses a supported body-hair overlay, the corresponding s
 
 ### Supported providers
 
-The v0.6.0 FOMOD supports:
+The v0.7.0 FOMOD supports:
 
 - **Nordic Warmaiden Body Hair**
 - **HIMBO V3 Bodyhair Overlays for Racemenu**
@@ -64,7 +64,8 @@ The v0.6.0 FOMOD supports:
 - **Pubes Forever for Males**
 - **OPubes NG** compatibility
 - **More Pubes for SlaveTats** — 48 female pubic styles
-- **Natural Pubic Hairstyles** — 65 female pubic styles
+- **Natural Pubic Hairstyles** — standard 2K/4K, 65 female pubic styles
+- **Natural Pubic Hairstyles - UBE** — UBE 2K/4K, 65 female pubic styles
 
 The provider mods supply the actual textures/assets. **Body Hair Sliders does not redistribute them.**
 
@@ -80,9 +81,12 @@ The style names from the original SlaveTats JSON are preserved, including the CB
 
 ### Natural Pubic Hairstyles support
 
-Body Hair Sliders scans the 65 `PubicHairStyles-*.dds` files provided by Natural Pubic Hairstyles and exposes them through the female `Pubic Hair` slider.
+Body Hair Sliders supports both Natural Pubic Hairstyles families:
 
-Keep Natural Pubic Hairstyles installed; its assets are not included with Body Hair Sliders.
+- **Standard 2K/4K** — scans `Data/Textures/Actors/Character/PubicHairStyles/` and detects `NaturalPubicHairstyles.esp`.
+- **UBE 2K/4K** — scans `Data/Textures/Actors/Character/UBE_PubicHairStyles/` and detects `UBENaturalPubicHairstyles.esp`.
+
+Both families expose the same 65 `PubicHairStyles-*.dds` styles through the female `Pubic Hair` slider. Choose only the FOMOD option matching the body/texture variant you have installed.
 
 ### HIMBO support
 
@@ -115,7 +119,7 @@ You also need at least one supported body-hair provider if you want body-hair st
 1. Install SKSE64, Address Library and RaceMenu.
 2. Install one or more supported body-hair provider mods.
 3. Install **Body Hair Sliders** with Vortex or another FOMOD-capable mod manager.
-4. Select the provider packs you actually have installed.
+4. Select the provider packs you actually have installed. For Natural Pubic Hairstyles, select either the standard 2K/4K option or the UBE 2K/4K option as appropriate.
 5. Enable the optional extended overlay slots if your current RaceMenu configuration does not already provide enough Body/Hands/Feet overlay slots.
 6. Enable `BodyHairSliders.esp`.
 7. Launch Skyrim and open RaceMenu (`showracemenu`).
@@ -164,14 +168,20 @@ Please endorse and support the original body-hair provider mods whose assets you
 
 Source code is available on GitHub under the `Caelvanost/BodyHairSliders` repository.
 
-## Version 0.6.0 changelog
+## Version 0.7.0 changelog
+
+- Added support for **Natural Pubic Hairstyles - UBE**.
+- Added separate detection for `UBENaturalPubicHairstyles.esp`.
+- Added scanning of the UBE texture directory `Data/Textures/Actors/Character/UBE_PubicHairStyles/`.
+- Supports the UBE 2K and UBE 4K variants with the same 65 logical styles.
+- Kept standard Natural Pubic Hairstyles and UBE as separate FOMOD options to avoid duplicate style sets.
+- Renumbered Extended Overlay Slots to follow the new provider package.
+
+## Previous v0.6.0 highlights
 
 - Added support for **More Pubes for SlaveTats** with 48 named female pubic-hair styles.
-- Added support for **Natural Pubic Hairstyles** with 65 female pubic-hair styles.
+- Added support for standard **Natural Pubic Hairstyles 2K/4K** with 65 female pubic-hair styles.
 - Added both providers to the modular FOMOD installer.
-- More Pubes provider preserves the names from its original SlaveTats JSON.
-- SlaveTats itself is not required for Body Hair Sliders integration; only the original texture pack is required.
-- Renumbered the optional Extended Overlay Slots FOMOD package after the new providers.
 
 ## Previous v0.5.0 highlights
 
@@ -196,19 +206,19 @@ Suggested tags:
 - Hair
 - SKSE
 
-**Version:** 0.6.0
+**Version:** 0.7.0
 
 **Main file name:**
 
-`BodyHairSliders-v0.6.0-FOMOD.zip`
+`BodyHairSliders-v0.7.0-FOMOD.zip`
 
 **Main file label:**
 
-`Body Hair Sliders v0.6.0 - FOMOD`
+`Body Hair Sliders v0.7.0 - FOMOD`
 
 **Main file description:**
 
-Main installer. Select only the body-hair provider packs installed in your setup. Includes optional support for More Pubes for SlaveTats and Natural Pubic Hairstyles, plus an optional RaceMenu overlay-capacity configuration.
+Main installer. Select only the body-hair provider packs installed in your setup. Includes support for Natural Pubic Hairstyles standard 2K/4K and UBE 2K/4K, plus the other supported providers and optional RaceMenu overlay-capacity configuration.
 
 ## Nexus requirements to add
 
@@ -226,7 +236,7 @@ Optional/provider requirements:
 - Pubes Forever for Males
 - OPubes NG
 - More Pubes for SlaveTats
-- Natural Pubic Hairstyles
+- Natural Pubic Hairstyles (standard or UBE variant)
 
 At least one provider is needed for styles to appear.
 
@@ -246,12 +256,13 @@ Do not claim ownership of any body-hair textures or meshes from the supported pr
 
 ## Publication checklist
 
-- [ ] Build from clean `main` with `VERSION = 0.6.0`.
+- [ ] Build from clean `main` with `VERSION = 0.7.0`.
 - [ ] Run `build_release.bat`.
-- [ ] Verify `dist/BodyHairSliders-v0.6.0-FOMOD.zip` installs cleanly in Vortex.
+- [ ] Verify `dist/BodyHairSliders-v0.7.0-FOMOD.zip` installs cleanly in Vortex.
 - [ ] Confirm all selected provider JSONs are installed under `SKSE/Plugins/BodyHairSliders/providers/`.
+- [ ] Test Natural Pubic Hairstyles standard 2K/4K on a female character.
+- [ ] Test Natural Pubic Hairstyles UBE 2K/4K on a UBE character.
 - [ ] Test More Pubes for SlaveTats on a female character.
-- [ ] Test Natural Pubic Hairstyles on a female character.
 - [ ] Re-test male HIMBO controls.
 - [ ] Test reopening RaceMenu preserves/detects existing slider positions.
 - [ ] Test `None / Shaved` clears representative Body/Hand/Feet overlays.
