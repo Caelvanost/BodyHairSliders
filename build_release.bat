@@ -80,10 +80,18 @@ if not exist "package\SKSE\Plugins\BodyHairSliders.dll" (
 echo [3/5] Compiling Papyrus API declarations...
 "%PAPYRUS_COMPILER%" "%PAPYRUS_SRC%\BodyHairSliders.psc" -f="%PAPYRUS_FLAGS%" -i="%PAPYRUS_SRC%;%PAPYRUS_STUBS%;%PAPYRUS_VANILLA%" -o="%PAPYRUS_OUT%"
 if errorlevel 1 exit /b 1
+if not exist "%PAPYRUS_OUT%\BodyHairSliders.pex" (
+  echo [ERROR] Papyrus compiler did not produce BodyHairSliders.pex.
+  exit /b 1
+)
 
 echo [4/5] Compiling dedicated RaceMenu frontend...
 "%PAPYRUS_COMPILER%" "%PAPYRUS_SRC%\BodyHairSlidersRaceMenu.psc" -f="%PAPYRUS_FLAGS%" -i="%PAPYRUS_SRC%;%PAPYRUS_STUBS%;%PAPYRUS_VANILLA%" -o="%PAPYRUS_OUT%"
 if errorlevel 1 exit /b 1
+if not exist "%PAPYRUS_OUT%\BodyHairSlidersRaceMenu.pex" (
+  echo [ERROR] Papyrus compiler did not produce BodyHairSlidersRaceMenu.pex.
+  exit /b 1
+)
 
 copy /Y "%PAPYRUS_SRC%\BodyHairSliders.psc" "package\Scripts\Source\BodyHairSliders.psc" >nul
 copy /Y "%PAPYRUS_SRC%\BodyHairSlidersRaceMenu.psc" "package\Scripts\Source\BodyHairSlidersRaceMenu.psc" >nul
