@@ -2,11 +2,11 @@
 
 ## Nexus file name
 
-`BodyHairSliders-v0.7.1-SE-1.5.97-TEST-FOMOD.zip`
+`BodyHairSliders-v0.7.2-SE-1.5.97-TEST-FOMOD.zip`
 
 ## Suggested Nexus file label
 
-**Body Hair Sliders v0.7.1 - Skyrim 1.5.97 TEST**
+**Body Hair Sliders v0.7.2 - Skyrim 1.5.97 TEST**
 
 ## Suggested file description
 
@@ -15,6 +15,8 @@ Experimental compatibility build for **Skyrim SE 1.5.97**.
 This build adds a dedicated legacy RaceMenu/SKEE backend to address crashes reported when opening RaceMenu on 1.5.97 installations. The crash was traced to an ABI mismatch between the modern SKEE C++ interface used by BodyHairSliders and the legacy SKEE interface exposed by 1.5.97-era RaceMenu.
 
 This test build avoids calling the legacy C++ SKEE vtables and uses RaceMenu's legacy `NiOverride` Papyrus API instead.
+
+v0.7.2 also fixes a Papyrus compiler name collision in the legacy frontend (`Location`) and makes the release script fail immediately if a required `.pex` was not produced.
 
 **Do not install this test archive on Skyrim 1.6.x.** Use the normal main file for modern Skyrim versions.
 
