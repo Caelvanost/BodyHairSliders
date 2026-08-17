@@ -1,0 +1,16 @@
+{
+  "id": "natural_pubic_hairstyles",
+  "name": "Natural Pubic Hairstyles",
+  "plugin": "NaturalPubicHairstyles.esp",
+  "styles": [],
+  "scanRules": [
+    {
+      "directory": "Data/Textures/Actors/Character/PubicHairStyles",
+      "region": "pubic",
+      "sex": "female",
+      "prefix": "PubicHairStyles-",
+      "suffix": ".dds",
+      "location": "body"
+    }
+  ]
+}
