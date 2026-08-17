@@ -32,7 +32,7 @@ The UI location is independent from the SKEE render location: HIMBO arms/back/be
 
 ## Supported providers
 
-The **v0.7.0** FOMOD supports:
+The **v0.7.1** FOMOD supports:
 
 - Nordic Warmaiden Body Hair
 - HIMBO V3 Bodyhair Overlays for Racemenu
@@ -135,15 +135,33 @@ The standard and UBE providers are separate FOMOD choices so users should select
 
 ## SKEE / NiOverride integration
 
-BodyHairSliders acquires RaceMenu's SKEE interfaces through SKSE interface exchange.
+BodyHairSliders acquires RaceMenu's SKEE interfaces through SKSE interface exchange and selects a backend from the interface versions before using them.
 
-The runtime uses:
+### Modern RaceMenu / SKEE
+
+Modern SKEE exposes the v2 wrapper ABI. BodyHairSliders uses the native C++ interfaces:
 
 - `Overlay` to discover overlay counts and node formats for Body, Hand and Feet locations;
 - `Override` to read/write diffuse texture, tint color and alpha;
 - `ActorUpdateManager` to rebuild overlays and node overrides.
 
-BodyHairSliders looks for existing supported overlay textures before reserving a new slot. This allows saved RaceMenu overlays to be detected and reclaimed instead of duplicated.
+### Legacy RaceMenu / Skyrim 1.5.97
+
+**v0.7.1 adds a compatibility path for the legacy SKEE v1 ABI used by RaceMenu 0.4.16-era Skyrim 1.5.97 setups.**
+
+The old SKEE C++ `Overlay` and `Override` vtables are not ABI-compatible with the modern wrapper API. Earlier BodyHairSliders builds could therefore dispatch a modern method through an old vtable and crash.
+
+BodyHairSliders now checks `Overlay`, `Override` and `ActorUpdateManager` interface versions through the ABI-stable base interface before any modern cast. When `Overlay v1 / Override v1` is detected, it does **not** call the legacy C++ vtables. The RaceMenu frontend instead uses RaceMenu's legacy `NiOverride` Papyrus natives for overlay counts, texture detection, node overrides, clearing and recoloring.
+
+Expected diagnostic line on that backend:
+
+```text
+SKEE acquired: Overlay v1 Override v1 ActorUpdate v0 backend=legacy-papyrus
+```
+
+This compatibility path is implemented from RaceMenu's official legacy API and requires field validation on an actual 1.5.97 installation before being marked fully tested.
+
+BodyHairSliders looks for existing supported overlay textures before reserving a new slot. This allows saved RaceMenu overlays to be detected and reclaimed instead of duplicated on both backends.
 
 The FOMOD can optionally install a `skee64_custom.ini` profile with expanded Body/Hand/Feet overlay capacity.
 
@@ -174,6 +192,8 @@ Runtime:
 - RaceMenu / SKEE
 - one or more supported body-hair provider mods selected in the FOMOD
 
+For Skyrim **1.5.97**, use the matching SKSE/RaceMenu/Address Library versions for that runtime. v0.7.1 contains the legacy RaceMenu/SKEE compatibility backend described above.
+
 Development/build:
 
 - Visual Studio with C++ desktop workload
@@ -184,9 +204,9 @@ Development/build:
 
 ## Installation
 
-1. Install SKSE64, Address Library and RaceMenu.
+1. Install SKSE64, Address Library and RaceMenu versions matching your Skyrim runtime.
 2. Install one or more supported body-hair provider mods.
-3. Install `BodyHairSliders-v0.7.0-FOMOD.zip` with Vortex or another FOMOD-capable mod manager.
+3. Install `BodyHairSliders-v0.7.1-FOMOD.zip` with Vortex or another FOMOD-capable mod manager.
 4. Select the body-hair providers actually installed in your setup. For Natural Pubic Hairstyles, choose the standard option for standard 2K/4K or the UBE option for UBE 2K/4K.
 5. Select the optional extended overlay-slot configuration if your current RaceMenu setup does not already provide enough Body/Hands/Feet overlay slots.
 6. Enable `BodyHairSliders.esp`.
@@ -217,7 +237,7 @@ Runtime diagnostics are written to:
 Documents/My Games/Skyrim Special Edition/SKSE/BodyHairSliders.log
 ```
 
-The log reports detected providers, style counts per body region, RaceMenu style queries and detected existing overlays.
+The log reports detected providers, style counts per body region, RaceMenu style queries and the selected modern/legacy SKEE backend.
 
 ## Build
 
@@ -234,10 +254,10 @@ package/BodyHairSliders.esp
 package/SKSE/Plugins/BodyHairSliders.dll
 package/Scripts/BodyHairSliders.pex
 package/Scripts/BodyHairSlidersRaceMenu.pex
-dist/BodyHairSliders-v0.7.0-FOMOD.zip
+dist/BodyHairSliders-v0.7.1-FOMOD.zip
 ```
 
-## Current state: v0.7.0
+## Current state: v0.7.1
 
 Implemented:
 
@@ -251,7 +271,8 @@ Implemented:
 - Natural Pubic Hairstyles UBE 2K/4K support with 65 female styles;
 - deterministic provider/style ordering;
 - case-insensitive region/sex/location lookup;
-- SKEE Body, Hand and Feet overlay rendering;
+- modern SKEE v2 C++ backend;
+- legacy SKEE v1 / RaceMenu 0.4.16 Papyrus `NiOverride` fallback for Skyrim 1.5.97-era setups;
 - free overlay-slot reservation and saved-slot reclamation;
 - detection of already-applied supported overlays;
 - texture/tint/alpha overrides and refresh;
@@ -261,7 +282,15 @@ Implemented:
 - optional expanded RaceMenu overlay capacity;
 - verified FOMOD archive packaging.
 
+### v0.7.1
+
+- Prevented modern SKEE wrapper calls from being made through legacy RaceMenu/SKEE v1 vtables.
+- Added explicit SKEE ABI version detection before interface casting.
+- Added a legacy `NiOverride` Papyrus renderer/detector for RaceMenu 0.4.16-era Skyrim 1.5.97 setups.
+- Preserved the existing modern C++ renderer unchanged for SKEE v2+.
+
 Planned:
 
+- field validation of the v0.7.1 legacy backend on Skyrim 1.5.97;
 - additional persistence/reapply hardening for unusual appearance refresh cases;
 - stable synchronization API for MorphSyncTogether or other multiplayer integrations.
