@@ -134,31 +134,31 @@ EndFunction
 ; Legacy RaceMenu / SKEE fallback (RaceMenu 0.4.16 / Skyrim 1.5.97 generation)
 ; -----------------------------------------------------------------------------
 
-Int Function BHS_LegacyOverlayCount(String location)
-    If location == "hand" || location == "hands"
+Int Function BHS_LegacyOverlayCount(String slotLocation)
+    If slotLocation == "hand" || slotLocation == "hands"
         Return NiOverride.GetNumHandOverlays()
-    ElseIf location == "feet" || location == "foot"
+    ElseIf slotLocation == "feet" || slotLocation == "foot"
         Return NiOverride.GetNumFeetOverlays()
     EndIf
     Return NiOverride.GetNumBodyOverlays()
 EndFunction
 
-String Function BHS_LegacyNodeName(String location, Int index)
-    If location == "hand" || location == "hands"
+String Function BHS_LegacyNodeName(String slotLocation, Int index)
+    If slotLocation == "hand" || slotLocation == "hands"
         Return "Hands [Ovl" + index + "]"
-    ElseIf location == "feet" || location == "foot"
+    ElseIf slotLocation == "feet" || slotLocation == "foot"
         Return "Feet [Ovl" + index + "]"
     EndIf
     Return "Body [Ovl" + index + "]"
 EndFunction
 
-Int Function BHS_FindLegacyStyleInLocation(String region, Bool isFemale, String location)
+Int Function BHS_FindLegacyStyleInLocation(String region, Bool isFemale, String slotLocation)
     Actor player = Game.GetPlayer()
-    Int count = BHS_LegacyOverlayCount(location)
+    Int count = BHS_LegacyOverlayCount(slotLocation)
     Int i = 0
 
     While i < count
-        String nodeName = BHS_LegacyNodeName(location, i)
+        String nodeName = BHS_LegacyNodeName(slotLocation, i)
         If NiOverride.HasNodeOverride(player, isFemale, nodeName, BHS_ShaderTexture, 0)
             String texture = NiOverride.GetNodeOverrideString(player, isFemale, nodeName, BHS_ShaderTexture, 0)
             Int styleIndex = BodyHairSliders.FindStyleIndexByTexture(region, texture, isFemale)
@@ -186,14 +186,14 @@ Int Function BHS_GetLegacyCurrentStyle(String region, Bool isFemale)
     Return BHS_FindLegacyStyleInLocation(region, isFemale, "feet")
 EndFunction
 
-Int Function BHS_FindLegacySlot(String region, String location, Bool isFemale)
+Int Function BHS_FindLegacySlot(String region, String slotLocation, Bool isFemale)
     Actor player = Game.GetPlayer()
-    Int count = BHS_LegacyOverlayCount(location)
+    Int count = BHS_LegacyOverlayCount(slotLocation)
     Int freeSlot = -1
     Int i = count - 1
 
     While i >= 0
-        String nodeName = BHS_LegacyNodeName(location, i)
+        String nodeName = BHS_LegacyNodeName(slotLocation, i)
         If NiOverride.HasNodeOverride(player, isFemale, nodeName, BHS_ShaderTexture, 0)
             String texture = NiOverride.GetNodeOverrideString(player, isFemale, nodeName, BHS_ShaderTexture, 0)
             If BodyHairSliders.FindStyleIndexByTexture(region, texture, isFemale) > 0
@@ -216,31 +216,31 @@ Function BHS_ApplyRegionLegacy(String region, Int requested, Bool isFemale)
 
     Actor player = Game.GetPlayer()
     String texture = BodyHairSliders.GetStyleTexture(region, requested, isFemale)
-    String location = BodyHairSliders.GetStyleLocation(region, requested, isFemale)
+    String slotLocation = BodyHairSliders.GetStyleLocation(region, requested, isFemale)
 
-    If texture == "" || location == ""
+    If texture == "" || slotLocation == ""
         Return
     EndIf
 
-    Int slot = BHS_FindLegacySlot(region, location, isFemale)
+    Int slot = BHS_FindLegacySlot(region, slotLocation, isFemale)
     If slot < 0
         Return
     EndIf
 
-    String nodeName = BHS_LegacyNodeName(location, slot)
+    String nodeName = BHS_LegacyNodeName(slotLocation, slot)
     NiOverride.AddNodeOverrideString(player, isFemale, nodeName, BHS_ShaderTexture, 0, texture, True)
     NiOverride.AddNodeOverrideInt(player, isFemale, nodeName, BHS_ShaderTintColor, BHS_Unindexed, BodyHairSliders.GetCurrentColorRGB(), True)
     NiOverride.AddNodeOverrideFloat(player, isFemale, nodeName, BHS_ShaderAlpha, BHS_Unindexed, 1.0, True)
     NiOverride.ApplyNodeOverrides(player)
 EndFunction
 
-Function BHS_ClearLegacyLocation(String region, Bool isFemale, String location)
+Function BHS_ClearLegacyLocation(String region, Bool isFemale, String slotLocation)
     Actor player = Game.GetPlayer()
-    Int count = BHS_LegacyOverlayCount(location)
+    Int count = BHS_LegacyOverlayCount(slotLocation)
     Int i = 0
 
     While i < count
-        String nodeName = BHS_LegacyNodeName(location, i)
+        String nodeName = BHS_LegacyNodeName(slotLocation, i)
         If NiOverride.HasNodeOverride(player, isFemale, nodeName, BHS_ShaderTexture, 0)
             String texture = NiOverride.GetNodeOverrideString(player, isFemale, nodeName, BHS_ShaderTexture, 0)
             If BodyHairSliders.FindStyleIndexByTexture(region, texture, isFemale) > 0
