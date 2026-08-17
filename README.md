@@ -32,13 +32,15 @@ The UI location is independent from the SKEE render location: HIMBO arms/back/be
 
 ## Supported providers
 
-The FOMOD currently supports:
+The **v0.6.0** FOMOD supports:
 
 - Nordic Warmaiden Body Hair
 - HIMBO V3 Bodyhair Overlays for Racemenu
 - Pubes Forever Female / Pubic Hairstyles All In One CBBE
 - Pubes Forever for Males
 - OPubes NG compatibility
+- More Pubes for SlaveTats
+- Natural Pubic Hairstyles
 
 Select only the providers that are actually installed in the current Skyrim setup.
 
@@ -94,6 +96,32 @@ Hands render through RaceMenu Hand overlays and feet through Feet overlays.
 
 OPubes NG is treated as an integration provider. Its assets remain external.
 
+### More Pubes for SlaveTats
+
+v0.6.0 adds the **48 female pubic-hair textures** from More Pubes for SlaveTats as normal BodyHairSliders `Pubic Hair` choices.
+
+The provider reads the original texture pack from:
+
+```text
+Data/textures/actors/character/slavetats/ZckeZckTPubicHair/
+```
+
+The original SlaveTats JSON names are preserved as slider style labels, including the CBBE/UNP-specific variants.
+
+**SlaveTats itself is not required by BodyHairSliders.** BodyHairSliders uses the installed DDS files directly through RaceMenu/SKEE. The More Pubes for SlaveTats texture pack itself must remain installed.
+
+### Natural Pubic Hairstyles
+
+v0.6.0 adds the **65 female body-paint pubic hairstyles** supplied by Natural Pubic Hairstyles.
+
+Styles are scanned from:
+
+```text
+Data/Textures/Actors/Character/PubicHairStyles/
+```
+
+using the `PubicHairStyles-*.dds` files. `NaturalPubicHairstyles.esp` is used as the provider detection plugin.
+
 ## SKEE / NiOverride integration
 
 BodyHairSliders acquires RaceMenu's SKEE interfaces through SKSE interface exchange.
@@ -147,7 +175,7 @@ Development/build:
 
 1. Install SKSE64, Address Library and RaceMenu.
 2. Install one or more supported body-hair provider mods.
-3. Install `BodyHairSliders-v0.5.0-FOMOD.zip` with Vortex or another FOMOD-capable mod manager.
+3. Install `BodyHairSliders-v0.6.0-FOMOD.zip` with Vortex or another FOMOD-capable mod manager.
 4. Select the body-hair providers actually installed in your setup.
 5. Select the optional extended overlay-slot configuration if your current RaceMenu setup does not already provide enough Body/Hands/Feet overlay slots.
 6. Enable `BodyHairSliders.esp`.
@@ -195,10 +223,10 @@ package/BodyHairSliders.esp
 package/SKSE/Plugins/BodyHairSliders.dll
 package/Scripts/BodyHairSliders.pex
 package/Scripts/BodyHairSlidersRaceMenu.pex
-dist/BodyHairSliders-v0.5.0-FOMOD.zip
+dist/BodyHairSliders-v0.6.0-FOMOD.zip
 ```
 
-## Current state: v0.5.0
+## Current state: v0.6.0
 
 Implemented:
 
@@ -207,6 +235,8 @@ Implemented:
 - native integration into RaceMenu's **Hair** category;
 - modular FOMOD provider selection;
 - Nordic Warmaiden, HIMBO, Pubes Forever Female/Male and OPubes NG provider support;
+- More Pubes for SlaveTats support with 48 named female styles;
+- Natural Pubic Hairstyles support with 65 female styles;
 - deterministic provider/style ordering;
 - case-insensitive region/sex/location lookup;
 - SKEE Body, Hand and Feet overlay rendering;
