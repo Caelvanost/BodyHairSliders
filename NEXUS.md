@@ -1,4 +1,4 @@
-# Nexus Mods publication pack — BodyHairSliders v0.5.0
+# Nexus Mods publication pack — BodyHairSliders v0.6.0
 
 ## Mod name
 
@@ -56,17 +56,33 @@ If the character already uses a supported body-hair overlay, the corresponding s
 
 ### Supported providers
 
-The v0.5.0 FOMOD supports:
+The v0.6.0 FOMOD supports:
 
 - **Nordic Warmaiden Body Hair**
 - **HIMBO V3 Bodyhair Overlays for Racemenu**
 - **Pubes Forever Female / Pubic Hairstyles All In One CBBE**
 - **Pubes Forever for Males**
 - **OPubes NG** compatibility
+- **More Pubes for SlaveTats** — 48 female pubic styles
+- **Natural Pubic Hairstyles** — 65 female pubic styles
 
 The provider mods supply the actual textures/assets. **Body Hair Sliders does not redistribute them.**
 
 Select only the providers you actually have installed during the FOMOD installation.
+
+### More Pubes for SlaveTats support
+
+Body Hair Sliders reads the original DDS files directly from the More Pubes for SlaveTats texture directory and exposes its 48 entries through the `Pubic Hair` slider.
+
+The style names from the original SlaveTats JSON are preserved, including the CBBE/UNP-specific variants.
+
+**SlaveTats itself is not required by Body Hair Sliders.** The original More Pubes for SlaveTats texture pack must be installed because Body Hair Sliders does not redistribute its assets.
+
+### Natural Pubic Hairstyles support
+
+Body Hair Sliders scans the 65 `PubicHairStyles-*.dds` files provided by Natural Pubic Hairstyles and exposes them through the female `Pubic Hair` slider.
+
+Keep Natural Pubic Hairstyles installed; its assets are not included with Body Hair Sliders.
 
 ### HIMBO support
 
@@ -94,8 +110,6 @@ Hard requirements:
 
 You also need at least one supported body-hair provider if you want body-hair styles to appear.
 
-RaceMenu provides the SKEE overlay system used by Body Hair Sliders. RaceMenu itself requires SKSE64. See the RaceMenu Nexus page for the correct version for your Skyrim runtime.
-
 ### Installation
 
 1. Install SKSE64, Address Library and RaceMenu.
@@ -108,8 +122,6 @@ RaceMenu provides the SKEE overlay system used by Body Hair Sliders. RaceMenu it
 8. Open **Hair**. The body-hair controls will appear alongside the normal hair/facial-hair controls.
 
 ### Extended overlay slots
-
-RaceMenu's overlay capacity can be shared by tattoos, body paints and other mods.
 
 The FOMOD includes an optional `skee64_custom.ini` configuration that increases the available normal overlay slots to:
 
@@ -124,16 +136,6 @@ Do not install this option if another mod already manages these values and your 
 Body Hair Sliders is designed to coexist with other RaceMenu overlay mods. It searches for free slots and attempts to reclaim already-existing supported body-hair overlays rather than overwriting unrelated paints.
 
 It does not replace or modify the original provider textures.
-
-### Upgrading from early development builds
-
-If you previously installed a manually compiled development version directly into Skyrim's `Data` folder, remove loose copies of:
-
-- `Data/BodyHairSliders.esp`
-- `Data/Scripts/BodyHairSliders.pex`
-- `Data/Scripts/BodyHairSlidersRaceMenu.pex`
-
-Then redeploy/reinstall the current version through your mod manager.
 
 ### Troubleshooting
 
@@ -154,7 +156,7 @@ When reporting an issue, include `BodyHairSliders.log`.
 
 - **expired6978** — RaceMenu / SKEE and the RaceMenu Modders Package/API
 - **CommonLibSSE-NG contributors** — SKSE/CommonLib plugin framework
-- Authors of the supported body-hair provider mods — all body-hair textures and assets remain their work and are not redistributed by Body Hair Sliders
+- Authors of all supported body-hair provider mods — all body-hair textures and assets remain their work and are not redistributed by Body Hair Sliders
 
 Please endorse and support the original body-hair provider mods whose assets you use.
 
@@ -162,24 +164,23 @@ Please endorse and support the original body-hair provider mods whose assets you
 
 Source code is available on GitHub under the `Caelvanost/BodyHairSliders` repository.
 
-## Version 0.5.0 changelog
+## Version 0.6.0 changelog
 
-**Initial Nexus release candidate**
+- Added support for **More Pubes for SlaveTats** with 48 named female pubic-hair styles.
+- Added support for **Natural Pubic Hairstyles** with 65 female pubic-hair styles.
+- Added both providers to the modular FOMOD installer.
+- More Pubes provider preserves the names from its original SlaveTats JSON.
+- SlaveTats itself is not required for Body Hair Sliders integration; only the original texture pack is required.
+- Renumbered the optional Extended Overlay Slots FOMOD package after the new providers.
+
+## Previous v0.5.0 highlights
 
 - Integrated Body Hair Sliders directly into RaceMenu's native Hair category.
 - Added dynamic sliders for pubic, armpit, chest, stomach, back, arm, hand, leg, foot and butt hair.
 - Added Body Hair Color with Match Hair and preset colors.
-- Added support for Nordic Warmaiden Body Hair.
-- Added explicit HIMBO body-hair mappings for Body, Hands and Feet overlays.
-- Added Pubes Forever Female / Pubic Hairstyles All In One CBBE support.
-- Added Pubes Forever for Males support.
-- Added OPubes NG compatibility provider.
-- Added modular FOMOD provider selection.
+- Added Nordic Warmaiden, HIMBO, Pubes Forever Female/Male and OPubes NG provider support.
 - Added automatic detection of supported overlays already applied to the player.
-- Added saved overlay-slot reclamation to avoid needless duplicate overlays.
-- Added case-insensitive provider region lookups.
-- Added optional expanded RaceMenu Body/Hands/Feet overlay capacity.
-- Added diagnostic logging to `BodyHairSliders.log`.
+- Added saved overlay-slot reclamation and optional expanded RaceMenu Body/Hands/Feet overlay capacity.
 
 ## Recommended Nexus metadata
 
@@ -187,28 +188,27 @@ Source code is available on GitHub under the `Caelvanost/BodyHairSliders` reposi
 
 **Category:** Body, Face, and Hair
 
-Suggested tags (choose the closest available Nexus tags):
+Suggested tags:
 
 - RaceMenu
 - Character Appearance
 - Body
 - Hair
 - SKSE
-- Utilities / Quality of Life if available
 
-**Version:** 0.5.0
+**Version:** 0.6.0
 
 **Main file name:**
 
-`BodyHairSliders-v0.5.0-FOMOD.zip`
+`BodyHairSliders-v0.6.0-FOMOD.zip`
 
 **Main file label:**
 
-`Body Hair Sliders v0.5.0 - FOMOD`
+`Body Hair Sliders v0.6.0 - FOMOD`
 
 **Main file description:**
 
-Main installer. Select only the body-hair provider packs installed in your setup. Includes an optional RaceMenu overlay-capacity configuration.
+Main installer. Select only the body-hair provider packs installed in your setup. Includes optional support for More Pubes for SlaveTats and Natural Pubic Hairstyles, plus an optional RaceMenu overlay-capacity configuration.
 
 ## Nexus requirements to add
 
@@ -216,57 +216,45 @@ Hard requirements:
 
 - RaceMenu
 - Address Library for SKSE Plugins
-- SKSE64 (can be mentioned in description if Nexus does not expose it conveniently as a requirement entry)
+- SKSE64
 
-Optional/provider requirements — mark them as optional and explain that at least one provider is required to expose styles:
+Optional/provider requirements:
 
 - Nordic Warmaiden Body Hair
 - HIMBO V3 Bodyhair Overlays for Racemenu
 - Pubes Forever SSE / Pubic Hairstyles All In One CBBE
 - Pubes Forever for Males
 - OPubes NG
+- More Pubes for SlaveTats
+- Natural Pubic Hairstyles
+
+At least one provider is needed for styles to appear.
 
 ## Permissions recommendation
 
 Body Hair Sliders itself contains original code/configuration and does not redistribute the supported providers' textures or meshes.
 
-Suggested Nexus permission stance for the first release:
+Suggested Nexus permission stance:
 
 - Other user's assets: **No assets from other authors are included in this file**.
 - Upload to other sites: **Ask permission first**.
-- Modification: **Allowed with credit**, or **ask permission first** if you want to keep tighter control during early development.
+- Modification: **Allowed with credit**, or **ask permission first** during early development.
 - Conversion to other games: **Ask permission first**.
 - Asset use in other mods: code/config only; **ask permission first** unless/until a repository license is chosen.
-- Donation Points: author's choice; no third-party provider assets are included in the download.
 
 Do not claim ownership of any body-hair textures or meshes from the supported provider mods.
 
-## Suggested images/screenshots
-
-Minimum useful set:
-
-1. **Main image** — RaceMenu Hair tab with several Body Hair Sliders visible.
-2. **Full slider list** — screenshot showing Pubic/Armpit/Chest/Stomach/Back/Arm/Hand/Leg/Foot/Butt + color controls.
-3. **Male HIMBO example** — visible chest/stomach/arm/leg hair selection.
-4. **Female example** — Nordic Warmaiden and/or Pubes Forever style shown in RaceMenu.
-5. **FOMOD provider selection** — screenshot showing the modular provider choices.
-6. Optional before/after image demonstrating an existing body-hair overlay being detected at the correct slider position.
-
-Avoid using provider authors' promotional screenshots without permission. Prefer screenshots taken in your own game.
-
 ## Publication checklist
 
-- [ ] Build from clean `main` with `VERSION = 0.5.0`.
+- [ ] Build from clean `main` with `VERSION = 0.6.0`.
 - [ ] Run `build_release.bat`.
-- [ ] Verify `dist/BodyHairSliders-v0.5.0-FOMOD.zip` installs cleanly in Vortex.
+- [ ] Verify `dist/BodyHairSliders-v0.6.0-FOMOD.zip` installs cleanly in Vortex.
 - [ ] Confirm all selected provider JSONs are installed under `SKSE/Plugins/BodyHairSliders/providers/`.
-- [ ] Confirm `BodyHairSliders.esp` is active.
-- [ ] Test male HIMBO controls.
-- [ ] Test at least one female provider.
+- [ ] Test More Pubes for SlaveTats on a female character.
+- [ ] Test Natural Pubic Hairstyles on a female character.
+- [ ] Re-test male HIMBO controls.
 - [ ] Test reopening RaceMenu preserves/detects existing slider positions.
-- [ ] Test `None / Shaved` clears each representative Body/Hand/Feet location.
+- [ ] Test `None / Shaved` clears representative Body/Hand/Feet overlays.
 - [ ] Test optional extended overlay-slot FOMOD choice.
-- [ ] Capture screenshots.
 - [ ] Add Nexus requirements and credits to provider authors.
 - [ ] Upload only the FOMOD archive as the main file.
-- [ ] Publish the GitHub source link on the Nexus page.
