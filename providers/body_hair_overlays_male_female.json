@@ -1,0 +1,13 @@
+{
+  "id": "body_hair_overlays_male_female",
+  "name": "Body Hair Overlays for Male and Female",
+  "plugin": "BH_Body.esp",
+  "styles": [
+    { "id": "bh_fullbody_female", "region": "fullbody", "label": "Full Body", "sex": "female", "texture": "Data/textures/actors/character/Overlays/Body Hair Overlays/BH_F.dds", "location": "body" },
+    { "id": "bh_arms_female", "region": "arms", "label": "Body Hair", "sex": "female", "texture": "Data/textures/actors/character/Overlays/Body Hair Overlays/BH_F_Arms.dds", "location": "body" },
+    { "id": "bh_legs_female", "region": "legs", "label": "Body Hair", "sex": "female", "texture": "Data/textures/actors/character/Overlays/Body Hair Overlays/BH_F_Legs.dds", "location": "body" },
+    { "id": "bh_fullbody_male", "region": "fullbody", "label": "Full Body", "sex": "male", "texture": "Data/textures/actors/character/Overlays/Body Hair Overlays/BH_M.dds", "location": "body" },
+    { "id": "bh_arms_male", "region": "arms", "label": "Body Hair", "sex": "male", "texture": "Data/textures/actors/character/Overlays/Body Hair Overlays/BH_M_Arms.dds", "location": "body" },
+    { "id": "bh_legs_male", "region": "legs", "label": "Body Hair", "sex": "male", "texture": "Data/textures/actors/character/Overlays/Body Hair Overlays/BH_M_Legs.dds", "location": "body" }
+  ]
+}
