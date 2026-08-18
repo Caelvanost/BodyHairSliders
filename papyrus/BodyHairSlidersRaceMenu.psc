@@ -17,6 +17,7 @@ EndEvent
 Event OnSliderRequest(Actor player, ActorBase playerBase, Race actorRace, Bool isFemale)
     BHS_IsFemale = isFemale
 
+    BHS_AddRegionSlider("Full Body Hair", "fullbody", "BHS_FullBody", isFemale)
     BHS_AddRegionSlider("Pubic Hair", "pubic", "BHS_Pubic", isFemale)
     BHS_AddRegionSlider("Armpit Hair", "armpits", "BHS_Armpits", isFemale)
     BHS_AddRegionSlider("Chest Hair", "chest", "BHS_Chest", isFemale)
@@ -55,7 +56,9 @@ Function BHS_AddRegionSlider(String displayName, String region, String callbackN
 EndFunction
 
 Event OnSliderChanged(String callback, Float value)
-    If callback == "BHS_Pubic"
+    If callback == "BHS_FullBody"
+        BHS_ApplyRegion("fullbody", value)
+    ElseIf callback == "BHS_Pubic"
         BHS_ApplyRegion("pubic", value)
     ElseIf callback == "BHS_Armpits"
         BHS_ApplyRegion("armpits", value)
@@ -110,6 +113,7 @@ Function BHS_ApplyColor(Float value)
     BodyHairSliders.SetColorIndex(requested)
 
     If BodyHairSliders.IsLegacySKEE()
+        BHS_ReapplyLegacyRegion("fullbody")
         BHS_ReapplyLegacyRegion("pubic")
         BHS_ReapplyLegacyRegion("armpits")
         BHS_ReapplyLegacyRegion("chest")
