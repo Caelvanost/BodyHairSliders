@@ -2,6 +2,10 @@
 
 BodyHairSliders is a Skyrim SE/AE SKSE plugin that exposes compatible third-party body-hair overlays through a unified RaceMenu frontend.
 
+> **Compatibility test branch:** `compat/skyrim-1.6.640-racemenu-0.4.19.14`
+>
+> **v0.8.0 targets Skyrim SE/AE 1.6.640 with RaceMenu 0.4.19.14.** This branch deliberately refuses to load on another Skyrim runtime so test results cannot be mixed with other compatibility targets.
+
 The mod does **not** redistribute body-hair textures or meshes. Supported body-hair mods remain external asset providers.
 
 ## RaceMenu controls
@@ -32,7 +36,7 @@ The UI location is independent from the SKEE render location: HIMBO arms/back/be
 
 ## Supported providers
 
-The **v0.7.0** FOMOD supports:
+The **v0.8.0** FOMOD supports:
 
 - Nordic Warmaiden Body Hair
 - HIMBO V3 Bodyhair Overlays for Racemenu
@@ -123,7 +127,7 @@ using the `PubicHairStyles-*.dds` files. `NaturalPubicHairstyles.esp` is used as
 
 ### Natural Pubic Hairstyles - UBE
 
-v0.7.0 adds support for the **UBE 2K/4K** Natural Pubic Hairstyles variants. They expose the same 65 logical styles but use a separate UBE texture directory:
+v0.7.0 added support for the **UBE 2K/4K** Natural Pubic Hairstyles variants. They expose the same 65 logical styles but use a separate UBE texture directory:
 
 ```text
 Data/Textures/Actors/Character/UBE_PubicHairStyles/
@@ -133,15 +137,40 @@ The provider scans the same `PubicHairStyles-*.dds` naming scheme and uses `UBEN
 
 The standard and UBE providers are separate FOMOD choices so users should select only the variant family actually installed for their body setup.
 
-## SKEE / NiOverride integration
+## Skyrim 1.6.640 / RaceMenu 0.4.19.14 compatibility
 
-BodyHairSliders acquires RaceMenu's SKEE interfaces through SKSE interface exchange.
+v0.8.0 is a dedicated compatibility test build for:
+
+```text
+Skyrim SE/AE 1.6.640
+RaceMenu 0.4.19.14
+SKSE64 matching Skyrim 1.6.640
+Address Library matching Skyrim 1.6.640
+```
+
+RaceMenu 0.4.19.14 uses the wrapper-generation SKEE API. The official SKEE interfaces expose version 2 for `Overlay`, `Override` and `ActorUpdateManager`.
+
+BodyHairSliders now queries every SKEE object through the ABI-stable `IPluginInterface` base first and reads `GetVersion()` before casting it to the wrapper interface. The test backend activates only when `Overlay v2` and `Override v2` are present.
+
+Expected log lines:
+
+```text
+BodyHairSliders v0.8.0 loading - Skyrim 1.6.640 / RaceMenu 0.4.19.14 TEST
+Compatibility target: Skyrim 1-6-640-0 / RaceMenu 0.4.19.14
+Detected Skyrim runtime: 1-6-640-0
+SKEE interface versions: Overlay=2 Override=2 ActorUpdate=2
+SKEE acquired: Overlay v2 Override v2 ActorUpdate v2 backend=rm-0.4.19.14-wrapper
+```
+
+If another Skyrim executable version is detected, this compatibility build returns `false` from plugin load rather than running against an unintended runtime.
+
+## SKEE integration
 
 The runtime uses:
 
 - `Overlay` to discover overlay counts and node formats for Body, Hand and Feet locations;
 - `Override` to read/write diffuse texture, tint color and alpha;
-- `ActorUpdateManager` to rebuild overlays and node overrides.
+- `ActorUpdateManager` to rebuild overlays and node overrides when the matching v2 interface is available.
 
 BodyHairSliders looks for existing supported overlay textures before reserving a new slot. This allows saved RaceMenu overlays to be detected and reclaimed instead of duplicated.
 
@@ -166,12 +195,12 @@ No third-party body-hair mod is required as a UI host.
 
 ## Requirements
 
-Runtime:
+Runtime for this branch:
 
-- Skyrim Special Edition / Anniversary Edition
-- SKSE64 matching the installed game version
-- Address Library for SKSE Plugins
-- RaceMenu / SKEE
+- Skyrim **1.6.640**
+- SKSE64 matching Skyrim 1.6.640
+- Address Library for Skyrim 1.6.640
+- RaceMenu **0.4.19.14** / SKEE v2
 - one or more supported body-hair provider mods selected in the FOMOD
 
 Development/build:
@@ -184,14 +213,16 @@ Development/build:
 
 ## Installation
 
-1. Install SKSE64, Address Library and RaceMenu.
-2. Install one or more supported body-hair provider mods.
-3. Install `BodyHairSliders-v0.7.0-FOMOD.zip` with Vortex or another FOMOD-capable mod manager.
-4. Select the body-hair providers actually installed in your setup. For Natural Pubic Hairstyles, choose the standard option for standard 2K/4K or the UBE option for UBE 2K/4K.
-5. Select the optional extended overlay-slot configuration if your current RaceMenu setup does not already provide enough Body/Hands/Feet overlay slots.
-6. Enable `BodyHairSliders.esp`.
-7. Launch Skyrim and open RaceMenu (`showracemenu`).
-8. Open the native **Hair** category. BodyHairSliders controls appear alongside the normal hair and facial-hair controls.
+1. Confirm the game executable is Skyrim **1.6.640**.
+2. Install the matching SKSE64 and Address Library.
+3. Install RaceMenu **0.4.19.14**.
+4. Install one or more supported body-hair provider mods.
+5. Install `BodyHairSliders-v0.8.0-SE-1.6.640-RM-0.4.19.14-TEST-FOMOD.zip` with Vortex or another FOMOD-capable mod manager.
+6. Select the body-hair providers actually installed in your setup.
+7. Select the optional extended overlay-slot configuration if your current RaceMenu setup does not already provide enough Body/Hands/Feet overlay slots.
+8. Enable `BodyHairSliders.esp`.
+9. Launch Skyrim and open RaceMenu (`showracemenu`).
+10. Open the native **Hair** category. BodyHairSliders controls appear alongside the normal hair and facial-hair controls.
 
 Only regions supplied by the selected and detected providers are shown.
 
@@ -203,9 +234,10 @@ If an old manually compiled BodyHairSliders frontend was previously placed direc
 Data/BodyHairSliders.esp
 Data/Scripts/BodyHairSliders.pex
 Data/Scripts/BodyHairSlidersRaceMenu.pex
+Data/SKSE/Plugins/BodyHairSliders.dll
 ```
 
-then redeploy the mod manager installation.
+then redeploy the mod manager installation. Do not keep another BodyHairSliders build enabled at the same time during compatibility testing.
 
 Do not remove source `.psc` files from `Data/Source/Scripts`; they are not loaded by the game.
 
@@ -217,7 +249,7 @@ Runtime diagnostics are written to:
 Documents/My Games/Skyrim Special Edition/SKSE/BodyHairSliders.log
 ```
 
-The log reports detected providers, style counts per body region, RaceMenu style queries and detected existing overlays.
+For compatibility reports, include that full log plus any CrashLogger/NetScriptFramework crash log.
 
 ## Build
 
@@ -227,17 +259,17 @@ build_release.bat
 
 The version is read from the root `VERSION` file by CMake and the packaging scripts.
 
-The build cleans previous build/staging output, compiles the C++ plugin and Papyrus scripts, stages the FOMOD, validates its XML/archive contents and produces:
+The build cleans previous build/staging output, compiles the C++ plugin and Papyrus scripts, verifies both `.pex` outputs, stages the FOMOD, validates its XML/archive contents and produces:
 
 ```text
 package/BodyHairSliders.esp
 package/SKSE/Plugins/BodyHairSliders.dll
 package/Scripts/BodyHairSliders.pex
 package/Scripts/BodyHairSlidersRaceMenu.pex
-dist/BodyHairSliders-v0.7.0-FOMOD.zip
+dist/BodyHairSliders-v0.8.0-SE-1.6.640-RM-0.4.19.14-TEST-FOMOD.zip
 ```
 
-## Current state: v0.7.0
+## Current state: v0.8.0
 
 Implemented:
 
@@ -259,9 +291,20 @@ Implemented:
 - `None / Shaved` for every region;
 - `Match Hair` plus color presets;
 - optional expanded RaceMenu overlay capacity;
-- verified FOMOD archive packaging.
+- verified FOMOD archive packaging;
+- exact Skyrim 1.6.640 runtime guard for this test branch;
+- SKEE v2 ABI validation before wrapper casts;
+- dedicated RaceMenu 0.4.19.14 compatibility diagnostics.
+
+### v0.8.0
+
+- Added a dedicated Skyrim 1.6.640 / RaceMenu 0.4.19.14 compatibility target.
+- Validates the Skyrim executable version before registering runtime functionality.
+- Validates SKEE `Overlay`, `Override` and `ActorUpdateManager` versions before wrapper casts.
+- Produces a separately named test FOMOD archive to prevent accidental mixing with other runtime builds.
 
 Planned:
 
+- field validation on a real Skyrim 1.6.640 + RaceMenu 0.4.19.14 setup;
 - additional persistence/reapply hardening for unusual appearance refresh cases;
 - stable synchronization API for MorphSyncTogether or other multiplayer integrations.
