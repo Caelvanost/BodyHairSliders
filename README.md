@@ -6,9 +6,9 @@ The mod does **not** redistribute body-hair textures or meshes. Supported body-h
 
 ## Current version
 
-**v0.9.0 — unified runtime support**
+**v0.10.0 — unified runtime support + Body Hair Overlays for Male and Female**
 
-One archive and one DLL now support both the validated legacy RaceMenu/SKEE v1 path and the modern SKEE v2+ path.
+One archive and one DLL support both the validated legacy RaceMenu/SKEE v1 path and the modern SKEE v2+ path.
 
 ### Runtime compatibility
 
@@ -18,7 +18,7 @@ Validated / intended targets:
 - **Skyrim SE/AE 1.6.1170** — modern RaceMenu/SKEE v2+ C++ backend.
 - **Skyrim 1.6.640** — planned for validation; the unified architecture already supports SKEE v2+ and the dedicated compatibility branch remains available for testing.
 
-BodyHairSliders does not select behavior from a hard-coded Skyrim version table. It queries RaceMenu/SKEE at runtime and selects the safe backend from the interface ABI:
+BodyHairSliders queries RaceMenu/SKEE at runtime and selects the safe backend from the interface ABI:
 
 ```text
 SKEE Overlay v1 + Override v1
@@ -28,12 +28,11 @@ SKEE Overlay v2+ + Override v2+
   -> modern C++ backend
 ```
 
-This prevents legacy SKEE v1 objects from being called through the incompatible modern wrapper vtable.
-
 ## RaceMenu controls
 
 BodyHairSliders integrates directly into RaceMenu's native **Hair** category and dynamically exposes only regions for which compatible styles are detected:
 
+- Full Body Hair
 - Pubic Hair
 - Armpit Hair
 - Chest Hair
@@ -52,7 +51,7 @@ Existing supported overlays already present on the player are detected and refle
 
 ## Supported providers
 
-The v0.9.0 FOMOD supports:
+The v0.10.0 FOMOD supports:
 
 - Nordic Warmaiden Body Hair
 - HIMBO V3 Bodyhair Overlays for Racemenu
@@ -62,6 +61,7 @@ The v0.9.0 FOMOD supports:
 - More Pubes for SlaveTats
 - Natural Pubic Hairstyles — standard 2K/4K variants
 - Natural Pubic Hairstyles - UBE — UBE 2K/4K variants
+- **Body Hair Overlays for Male and Female — BH extra variants**
 
 Select only the providers actually installed in the current Skyrim setup.
 
@@ -71,22 +71,39 @@ Provider definitions are installed under:
 SKSE/Plugins/BodyHairSliders/providers/*.json
 ```
 
+## Body Hair Overlays for Male and Female
+
+v0.10.0 adds support for the **BH extra variants** archive.
+
+The original provider contains:
+
+```text
+BH_Body.esp
+Data/textures/actors/character/Overlays/Body Hair Overlays/BH_F.dds
+Data/textures/actors/character/Overlays/Body Hair Overlays/BH_F_Arms.dds
+Data/textures/actors/character/Overlays/Body Hair Overlays/BH_F_Legs.dds
+Data/textures/actors/character/Overlays/Body Hair Overlays/BH_M.dds
+Data/textures/actors/character/Overlays/Body Hair Overlays/BH_M_Arms.dds
+Data/textures/actors/character/Overlays/Body Hair Overlays/BH_M_Legs.dds
+```
+
+BodyHairSliders maps these as:
+
+- `BH_F.dds` / `BH_M.dds` -> **Full Body Hair**
+- `BH_F_Arms.dds` / `BH_M_Arms.dds` -> **Arm Hair**
+- `BH_F_Legs.dds` / `BH_M_Legs.dds` -> **Leg Hair**
+
+Male and female styles are exposed independently. The original provider mod must remain installed; BodyHairSliders only references its DDS files.
+
 ## Backend details
 
 ### Legacy SKEE v1 / Skyrim 1.5.97
 
-The original SKEE v1 `Overlay` and `Override` interfaces are not ABI-compatible with the modern wrapper API. BodyHairSliders therefore queries only the stable base `IPluginInterface` first, reads `GetVersion()`, and never casts v1 objects to the modern wrappers.
+The original SKEE v1 `Overlay` and `Override` interfaces are not ABI-compatible with the modern wrapper API. BodyHairSliders queries only the stable base `IPluginInterface` first, reads `GetVersion()`, and never casts v1 objects to the modern wrappers.
 
-For v1/v1, the RaceMenu frontend uses RaceMenu's `NiOverride` Papyrus natives for:
+For v1/v1, the RaceMenu frontend uses RaceMenu's `NiOverride` Papyrus natives for overlay counts, current texture detection, slot reuse, texture/tint/alpha application, clearing and recoloring.
 
-- Body/Hands/Feet overlay counts;
-- current texture detection;
-- overlay slot reuse;
-- texture/tint/alpha application;
-- `None / Shaved` clearing;
-- color reapplication.
-
-This path was field-tested successfully by Skyrim 1.5.97 users in the v0.7.2 compatibility build and is carried forward into v0.9.0.
+This path was field-tested successfully by Skyrim 1.5.97 users in the v0.7.2 compatibility build and is carried forward into the unified build.
 
 Expected log lines include:
 
@@ -97,11 +114,7 @@ Selected SKEE backend: legacy-papyrus (...)
 
 ### Modern SKEE v2+
 
-For `Overlay >= 2` and `Override >= 2`, BodyHairSliders uses the native C++ backend:
-
-- `Overlay` for Body/Hand/Feet overlay counts and node formats;
-- `Override` for diffuse texture, tint and alpha;
-- `ActorUpdateManager` when available for refresh/update work.
+For `Overlay >= 2` and `Override >= 2`, BodyHairSliders uses the native C++ backend.
 
 Expected log lines include:
 
@@ -118,13 +131,11 @@ Selected SKEE backend: modern (...)
 - RaceMenu / SKEE matching the runtime
 - one or more supported body-hair provider mods selected in the FOMOD
 
-For Skyrim 1.5.97, use the matching 1.5.97-era SKSE, Address Library and RaceMenu build. For modern Skyrim, use the corresponding modern versions.
-
 ## Installation
 
 1. Install SKSE64, Address Library and RaceMenu versions matching your Skyrim runtime.
 2. Install one or more supported body-hair provider mods.
-3. Install `BodyHairSliders-v0.9.0-FOMOD.zip` with Vortex or another FOMOD-capable mod manager.
+3. Install `BodyHairSliders-v0.10.0-FOMOD.zip` with Vortex or another FOMOD-capable mod manager.
 4. Select the provider packs actually installed in your setup.
 5. Optionally install the extended RaceMenu Body/Hands/Feet overlay-slot configuration if needed.
 6. Enable `BodyHairSliders.esp`.
@@ -139,9 +150,7 @@ Runtime diagnostics are written to:
 Documents/My Games/Skyrim Special Edition/SKSE/BodyHairSliders.log
 ```
 
-The first line identifies the exact BodyHairSliders build. The log also reports provider detection, style counts, SKEE interface versions and the selected backend.
-
-When reporting compatibility problems, include the full `BodyHairSliders.log`, exact Skyrim version, SKSE version and RaceMenu version.
+The first lines identify the exact BodyHairSliders build and detected Skyrim runtime. The log also reports provider detection, style counts, SKEE interface versions and the selected backend.
 
 ## Build
 
@@ -149,29 +158,26 @@ When reporting compatibility problems, include the full `BodyHairSliders.log`, e
 build_release.bat
 ```
 
-The version is read from the root `VERSION` file. The build cleans previous outputs, compiles the C++ DLL and Papyrus frontend, verifies both `.pex` files were generated, stages and validates the FOMOD, then produces:
+The version is read from the root `VERSION` file. The build verifies the DLL, both Papyrus `.pex` files, all selected provider definitions and the final FOMOD archive.
+
+Expected archive:
 
 ```text
-package/BodyHairSliders.esp
-package/SKSE/Plugins/BodyHairSliders.dll
-package/Scripts/BodyHairSliders.pex
-package/Scripts/BodyHairSlidersRaceMenu.pex
-dist/BodyHairSliders-v0.9.0-FOMOD.zip
+dist/BodyHairSliders-v0.10.0-FOMOD.zip
 ```
 
 `compiler_stubs/NiOverride.psc` is compile-time only and is **not** packaged as a RaceMenu replacement.
 
-## v0.9.0
+## v0.10.0
 
-- Unified the validated Skyrim 1.5.97 legacy backend with the existing modern backend into one DLL.
-- Added runtime SKEE ABI detection before any interface cast.
-- Selects `legacy-papyrus` for SKEE v1/v1 and `modern` for SKEE v2+.
-- Carries forward the field-tested v0.7.2 NiOverride compatibility implementation.
-- Keeps the modern overlay renderer unchanged for current SKEE wrapper APIs.
-- Hardened the release build so missing Papyrus outputs abort packaging.
-- Restored a single universal FOMOD archive name.
+- Added **Body Hair Overlays for Male and Female — BH extra variants** provider support.
+- Added a new native RaceMenu **Full Body Hair** slider.
+- Added male and female full-body overlay mappings.
+- Added male and female Arm Hair and Leg Hair mappings for the BH pack.
+- Added automatic FOMOD recommendation when `BH_Body.esp` is active.
+- Preserved the unified SKEE v1 legacy and SKEE v2+ modern runtime architecture introduced in v0.9.0.
 
-## Supported provider notes
+## Existing provider notes
 
 ### HIMBO
 
