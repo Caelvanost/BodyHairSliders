@@ -10,7 +10,7 @@ namespace BHS
 
     bool RaceMenuIntegration::Initialize()
     {
-        available_ = false;
+        backend_ = Backend::Unavailable;
         overlay_ = nullptr;
         override_ = nullptr;
         actorUpdate_ = nullptr;
@@ -39,20 +39,56 @@ namespace BHS
             return false;
         }
 
-        overlay_ = static_cast<SKEE::IOverlayInterface*>(exchange.interfaceMap->QueryInterface("Overlay"));
-        override_ = static_cast<SKEE::IOverrideInterface*>(exchange.interfaceMap->QueryInterface("Override"));
-        actorUpdate_ = static_cast<SKEE::IActorUpdateManager*>(exchange.interfaceMap->QueryInterface("ActorUpdateManager"));
+        // Query through the ABI-stable IPluginInterface base first. GetVersion() has
+        // occupied the same base vtable slot since the legacy 1.5.97-era SKEE API.
+        // Never cast a v1 object to the modern wrapper interfaces: their vtables are
+        // incompatible and doing so can dispatch into unrelated functions and CTD.
+        auto* overlayBase = exchange.interfaceMap->QueryInterface("Overlay");
+        auto* overrideBase = exchange.interfaceMap->QueryInterface("Override");
+        auto* actorUpdateBase = exchange.interfaceMap->QueryInterface("ActorUpdateManager");
 
-        if (!overlay_ || !override_) {
+        if (!overlayBase || !overrideBase) {
             SKSE::log::error("Required SKEE interfaces missing (Overlay={} Override={})",
-                static_cast<const void*>(overlay_), static_cast<const void*>(override_));
+                static_cast<const void*>(overlayBase), static_cast<const void*>(overrideBase));
             return false;
         }
 
-        SKSE::log::info("SKEE acquired: Overlay v{}, Override v{}, ActorUpdateManager={}",
-            overlay_->GetVersion(), override_->GetVersion(), static_cast<const void*>(actorUpdate_));
+        const auto overlayVersion = overlayBase->GetVersion();
+        const auto overrideVersion = overrideBase->GetVersion();
+        const auto actorUpdateVersion = actorUpdateBase ? actorUpdateBase->GetVersion() : 0U;
 
-        available_ = true;
-        return true;
+        SKSE::log::info("SKEE interface versions: Overlay={} Override={} ActorUpdate={}",
+            overlayVersion, overrideVersion, actorUpdateVersion);
+
+        if (overlayVersion >= 2 && overrideVersion >= 2) {
+            overlay_ = static_cast<SKEE::IOverlayInterface*>(overlayBase);
+            override_ = static_cast<SKEE::IOverrideInterface*>(overrideBase);
+            if (actorUpdateBase && actorUpdateVersion >= 2) {
+                actorUpdate_ = static_cast<SKEE::IActorUpdateManager*>(actorUpdateBase);
+            }
+            backend_ = Backend::Modern;
+
+            SKSE::log::info(
+                "Selected SKEE backend: modern (Overlay v{} Override v{} ActorUpdate v{})",
+                overlayVersion, overrideVersion, actorUpdateVersion);
+            return true;
+        }
+
+        if (overlayVersion == 1 && overrideVersion == 1) {
+            // RaceMenu 0.4.16 / Skyrim 1.5.97 uses the original SKEE C++ ABI.
+            // BodyHairSliders deliberately does not call through those old C++
+            // vtables. The RaceMenu frontend uses the stable legacy NiOverride
+            // Papyrus natives instead.
+            backend_ = Backend::LegacyPapyrus;
+            SKSE::log::info(
+                "Selected SKEE backend: legacy-papyrus (Overlay v{} Override v{} ActorUpdate v{})",
+                overlayVersion, overrideVersion, actorUpdateVersion);
+            return true;
+        }
+
+        SKSE::log::error(
+            "Unsupported SKEE interface combination: Overlay v{} Override v{} ActorUpdate v{}",
+            overlayVersion, overrideVersion, actorUpdateVersion);
+        return false;
     }
 }
