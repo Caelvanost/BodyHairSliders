@@ -4,11 +4,35 @@ BodyHairSliders is a Skyrim SE/AE SKSE plugin that exposes compatible third-part
 
 The mod does **not** redistribute body-hair textures or meshes. Supported body-hair mods remain external asset providers.
 
+## Current version
+
+**v0.9.0 — unified runtime support**
+
+One archive and one DLL now support both the validated legacy RaceMenu/SKEE v1 path and the modern SKEE v2+ path.
+
+### Runtime compatibility
+
+Validated / intended targets:
+
+- **Skyrim SE 1.5.97** — legacy RaceMenu/SKEE v1 backend through RaceMenu `NiOverride` Papyrus natives.
+- **Skyrim SE/AE 1.6.1170** — modern RaceMenu/SKEE v2+ C++ backend.
+- **Skyrim 1.6.640** — planned for validation; the unified architecture already supports SKEE v2+ and the dedicated compatibility branch remains available for testing.
+
+BodyHairSliders does not select behavior from a hard-coded Skyrim version table. It queries RaceMenu/SKEE at runtime and selects the safe backend from the interface ABI:
+
+```text
+SKEE Overlay v1 + Override v1
+  -> legacy-papyrus backend
+
+SKEE Overlay v2+ + Override v2+
+  -> modern C++ backend
+```
+
+This prevents legacy SKEE v1 objects from being called through the incompatible modern wrapper vtable.
+
 ## RaceMenu controls
 
-Starting with **v0.5.0**, BodyHairSliders integrates directly into RaceMenu's native **Hair** category instead of creating a separate tab.
-
-The frontend dynamically exposes only regions for which compatible styles are detected:
+BodyHairSliders integrates directly into RaceMenu's native **Hair** category and dynamically exposes only regions for which compatible styles are detected:
 
 - Pubic Hair
 - Armpit Hair
@@ -22,17 +46,13 @@ The frontend dynamically exposes only regions for which compatible styles are de
 - Butt Hair
 - Body Hair Color
 
-Each region uses `0 = None / Shaved`, followed by the detected styles.
+Each region uses `0 = None / Shaved`, followed by the detected styles. `Body Hair Color` provides `Match Hair` plus built-in color presets.
 
-`Body Hair Color` provides `Match Hair` plus built-in color presets.
-
-Existing supported overlays already present on the player are detected from RaceMenu/SKEE and reflected by the corresponding sliders when RaceMenu opens.
-
-The UI location is independent from the SKEE render location: HIMBO arms/back/belly/chest/legs use Body overlay slots, hands use Hand overlay slots, and feet use Feet overlay slots while all controls remain together under **Hair**.
+Existing supported overlays already present on the player are detected and reflected by the corresponding sliders when RaceMenu opens.
 
 ## Supported providers
 
-The **v0.7.0** FOMOD supports:
+The v0.9.0 FOMOD supports:
 
 - Nordic Warmaiden Body Hair
 - HIMBO V3 Bodyhair Overlays for Racemenu
@@ -43,7 +63,7 @@ The **v0.7.0** FOMOD supports:
 - Natural Pubic Hairstyles — standard 2K/4K variants
 - Natural Pubic Hairstyles - UBE — UBE 2K/4K variants
 
-Select only the providers that are actually installed in the current Skyrim setup.
+Select only the providers actually installed in the current Skyrim setup.
 
 Provider definitions are installed under:
 
@@ -51,163 +71,65 @@ Provider definitions are installed under:
 SKSE/Plugins/BodyHairSliders/providers/*.json
 ```
 
-`config.json` contains global BodyHairSliders settings. Provider files are loaded deterministically and provider/style identifiers are normalized so RaceMenu lookups are case-insensitive.
+## Backend details
 
-## Provider details
+### Legacy SKEE v1 / Skyrim 1.5.97
 
-### Nordic Warmaiden Body Hair
+The original SKEE v1 `Overlay` and `Override` interfaces are not ABI-compatible with the modern wrapper API. BodyHairSliders therefore queries only the stable base `IPluginInterface` first, reads `GetVersion()`, and never casts v1 objects to the modern wrappers.
 
-Scanned from:
+For v1/v1, the RaceMenu frontend uses RaceMenu's `NiOverride` Papyrus natives for:
 
-```text
-Data/Textures/Actors/Nordic Warmaiden Hair/
-```
+- Body/Hands/Feet overlay counts;
+- current texture detection;
+- overlay slot reuse;
+- texture/tint/alpha application;
+- `None / Shaved` clearing;
+- color reapplication.
 
-Supported groups include pubic hair, armpits, stomach/navel, butt/crack and back hair. Paired `Dark_` and `Fair_` textures are merged into one logical style.
+This path was field-tested successfully by Skyrim 1.5.97 users in the v0.7.2 compatibility build and is carried forward into v0.9.0.
 
-### Pubes Forever Female / Pubic Hairstyles All In One CBBE
-
-Female pubic-hair overlays are scanned from:
-
-```text
-Data/textures/actors/character/ak_rm_pubic_hair_all_in_one/
-```
-
-### Pubes Forever for Males
-
-Male pubic-hair overlays use the corresponding male textures from the provider pack.
-
-### HIMBO V3 Bodyhair Overlays for Racemenu
-
-Expected controls:
-
-- Arms: Light / Medium / Heavy
-- Hands: Light / Medium / Heavy
-- Armpit: one style
-- Butt: Light / Medium / Heavy
-- Back: Light / Medium / Heavy
-- Stomach/Belly: Light / Medium / Heavy
-- Chest: Light / Medium / Heavy
-- Legs: Light / Medium / Heavy
-- Feet: one style
-
-Hands render through RaceMenu Hand overlays and feet through Feet overlays.
-
-### OPubes NG
-
-OPubes NG is treated as an integration provider. Its assets remain external.
-
-### More Pubes for SlaveTats
-
-v0.6.0 added the **48 female pubic-hair textures** from More Pubes for SlaveTats as normal BodyHairSliders `Pubic Hair` choices.
-
-The provider reads the original texture pack from:
+Expected log lines include:
 
 ```text
-Data/textures/actors/character/slavetats/ZckeZckTPubicHair/
+SKEE interface versions: Overlay=1 Override=1 ActorUpdate=0
+Selected SKEE backend: legacy-papyrus (...)
 ```
 
-The original SlaveTats JSON names are preserved as slider style labels, including the CBBE/UNP-specific variants.
+### Modern SKEE v2+
 
-**SlaveTats itself is not required by BodyHairSliders.** BodyHairSliders uses the installed DDS files directly through RaceMenu/SKEE. The More Pubes for SlaveTats texture pack itself must remain installed.
+For `Overlay >= 2` and `Override >= 2`, BodyHairSliders uses the native C++ backend:
 
-### Natural Pubic Hairstyles
+- `Overlay` for Body/Hand/Feet overlay counts and node formats;
+- `Override` for diffuse texture, tint and alpha;
+- `ActorUpdateManager` when available for refresh/update work.
 
-The standard Natural Pubic Hairstyles provider supports both **2K and 4K** variants. It scans the 65 female styles from:
+Expected log lines include:
 
 ```text
-Data/Textures/Actors/Character/PubicHairStyles/
+SKEE interface versions: Overlay=2 Override=2 ActorUpdate=2
+Selected SKEE backend: modern (...)
 ```
-
-using the `PubicHairStyles-*.dds` files. `NaturalPubicHairstyles.esp` is used as the provider detection plugin.
-
-### Natural Pubic Hairstyles - UBE
-
-v0.7.0 adds support for the **UBE 2K/4K** Natural Pubic Hairstyles variants. They expose the same 65 logical styles but use a separate UBE texture directory:
-
-```text
-Data/Textures/Actors/Character/UBE_PubicHairStyles/
-```
-
-The provider scans the same `PubicHairStyles-*.dds` naming scheme and uses `UBENaturalPubicHairstyles.esp` for detection.
-
-The standard and UBE providers are separate FOMOD choices so users should select only the variant family actually installed for their body setup.
-
-## SKEE / NiOverride integration
-
-BodyHairSliders acquires RaceMenu's SKEE interfaces through SKSE interface exchange.
-
-The runtime uses:
-
-- `Overlay` to discover overlay counts and node formats for Body, Hand and Feet locations;
-- `Override` to read/write diffuse texture, tint color and alpha;
-- `ActorUpdateManager` to rebuild overlays and node overrides.
-
-BodyHairSliders looks for existing supported overlay textures before reserving a new slot. This allows saved RaceMenu overlays to be detected and reclaimed instead of duplicated.
-
-The FOMOD can optionally install a `skee64_custom.ini` profile with expanded Body/Hand/Feet overlay capacity.
-
-## RaceMenu frontend host
-
-BodyHairSliders ships its own `BodyHairSliders.esp`. The plugin contains the start-game-enabled `BHS_RaceMenuQuest`, with:
-
-- `BodyHairSlidersRaceMenu` attached to the quest;
-- a `Player` alias forced to `PlayerRef`;
-- RaceMenu's `RaceMenuLoad` attached to the Player alias.
-
-As of v0.5.0, the frontend uses RaceMenu's native Hair category:
-
-```text
-CATEGORY_HAIR = 256
-AddSlider(..., CATEGORY_HAIR, ...)
-```
-
-No third-party body-hair mod is required as a UI host.
 
 ## Requirements
 
-Runtime:
-
-- Skyrim Special Edition / Anniversary Edition
+- Skyrim Special Edition / Anniversary Edition on a supported runtime
 - SKSE64 matching the installed game version
-- Address Library for SKSE Plugins
-- RaceMenu / SKEE
+- Address Library for SKSE Plugins matching the runtime
+- RaceMenu / SKEE matching the runtime
 - one or more supported body-hair provider mods selected in the FOMOD
 
-Development/build:
-
-- Visual Studio with C++ desktop workload
-- CMake 3.21+
-- vcpkg (`VCPKG_ROOT`)
-- CommonLibSSE-NG
-- Skyrim Creation Kit Papyrus compiler and extracted vanilla/RaceMenu script sources
+For Skyrim 1.5.97, use the matching 1.5.97-era SKSE, Address Library and RaceMenu build. For modern Skyrim, use the corresponding modern versions.
 
 ## Installation
 
-1. Install SKSE64, Address Library and RaceMenu.
+1. Install SKSE64, Address Library and RaceMenu versions matching your Skyrim runtime.
 2. Install one or more supported body-hair provider mods.
-3. Install `BodyHairSliders-v0.7.0-FOMOD.zip` with Vortex or another FOMOD-capable mod manager.
-4. Select the body-hair providers actually installed in your setup. For Natural Pubic Hairstyles, choose the standard option for standard 2K/4K or the UBE option for UBE 2K/4K.
-5. Select the optional extended overlay-slot configuration if your current RaceMenu setup does not already provide enough Body/Hands/Feet overlay slots.
+3. Install `BodyHairSliders-v0.9.0-FOMOD.zip` with Vortex or another FOMOD-capable mod manager.
+4. Select the provider packs actually installed in your setup.
+5. Optionally install the extended RaceMenu Body/Hands/Feet overlay-slot configuration if needed.
 6. Enable `BodyHairSliders.esp`.
 7. Launch Skyrim and open RaceMenu (`showracemenu`).
-8. Open the native **Hair** category. BodyHairSliders controls appear alongside the normal hair and facial-hair controls.
-
-Only regions supplied by the selected and detected providers are shown.
-
-## Upgrading from older development builds
-
-If an old manually compiled BodyHairSliders frontend was previously placed directly in `Data`, remove loose copies of:
-
-```text
-Data/BodyHairSliders.esp
-Data/Scripts/BodyHairSliders.pex
-Data/Scripts/BodyHairSlidersRaceMenu.pex
-```
-
-then redeploy the mod manager installation.
-
-Do not remove source `.psc` files from `Data/Source/Scripts`; they are not loaded by the game.
+8. Open the native **Hair** category.
 
 ## Diagnostics
 
@@ -217,7 +139,9 @@ Runtime diagnostics are written to:
 Documents/My Games/Skyrim Special Edition/SKSE/BodyHairSliders.log
 ```
 
-The log reports detected providers, style counts per body region, RaceMenu style queries and detected existing overlays.
+The first line identifies the exact BodyHairSliders build. The log also reports provider detection, style counts, SKEE interface versions and the selected backend.
+
+When reporting compatibility problems, include the full `BodyHairSliders.log`, exact Skyrim version, SKSE version and RaceMenu version.
 
 ## Build
 
@@ -225,43 +149,50 @@ The log reports detected providers, style counts per body region, RaceMenu style
 build_release.bat
 ```
 
-The version is read from the root `VERSION` file by CMake and the packaging scripts.
-
-The build cleans previous build/staging output, compiles the C++ plugin and Papyrus scripts, stages the FOMOD, validates its XML/archive contents and produces:
+The version is read from the root `VERSION` file. The build cleans previous outputs, compiles the C++ DLL and Papyrus frontend, verifies both `.pex` files were generated, stages and validates the FOMOD, then produces:
 
 ```text
 package/BodyHairSliders.esp
 package/SKSE/Plugins/BodyHairSliders.dll
 package/Scripts/BodyHairSliders.pex
 package/Scripts/BodyHairSlidersRaceMenu.pex
-dist/BodyHairSliders-v0.7.0-FOMOD.zip
+dist/BodyHairSliders-v0.9.0-FOMOD.zip
 ```
 
-## Current state: v0.7.0
+`compiler_stubs/NiOverride.psc` is compile-time only and is **not** packaged as a RaceMenu replacement.
 
-Implemented:
+## v0.9.0
 
-- CommonLibSSE-NG SKSE plugin;
-- dedicated `BodyHairSliders.esp` RaceMenu host;
-- native integration into RaceMenu's **Hair** category;
-- modular FOMOD provider selection;
-- Nordic Warmaiden, HIMBO, Pubes Forever Female/Male and OPubes NG provider support;
-- More Pubes for SlaveTats support with 48 named female styles;
-- Natural Pubic Hairstyles standard 2K/4K support with 65 female styles;
-- Natural Pubic Hairstyles UBE 2K/4K support with 65 female styles;
-- deterministic provider/style ordering;
-- case-insensitive region/sex/location lookup;
-- SKEE Body, Hand and Feet overlay rendering;
-- free overlay-slot reservation and saved-slot reclamation;
-- detection of already-applied supported overlays;
-- texture/tint/alpha overrides and refresh;
-- native Papyrus API for style discovery/application;
-- `None / Shaved` for every region;
-- `Match Hair` plus color presets;
-- optional expanded RaceMenu overlay capacity;
-- verified FOMOD archive packaging.
+- Unified the validated Skyrim 1.5.97 legacy backend with the existing modern backend into one DLL.
+- Added runtime SKEE ABI detection before any interface cast.
+- Selects `legacy-papyrus` for SKEE v1/v1 and `modern` for SKEE v2+.
+- Carries forward the field-tested v0.7.2 NiOverride compatibility implementation.
+- Keeps the modern overlay renderer unchanged for current SKEE wrapper APIs.
+- Hardened the release build so missing Papyrus outputs abort packaging.
+- Restored a single universal FOMOD archive name.
 
-Planned:
+## Supported provider notes
 
-- additional persistence/reapply hardening for unusual appearance refresh cases;
-- stable synchronization API for MorphSyncTogether or other multiplayer integrations.
+### HIMBO
+
+HIMBO exposes arms, hands, armpits, butt, back, stomach/belly, chest, legs and feet. Hands render through Hand overlay slots and feet through Feet overlay slots while controls remain under Hair.
+
+### More Pubes for SlaveTats
+
+BodyHairSliders reads the original provider DDS files directly. SlaveTats itself is not required, but the original texture pack must remain installed.
+
+### Natural Pubic Hairstyles
+
+Standard variants use:
+
+```text
+Data/Textures/Actors/Character/PubicHairStyles/
+```
+
+UBE variants use:
+
+```text
+Data/Textures/Actors/Character/UBE_PubicHairStyles/
+```
+
+The standard and UBE providers remain separate FOMOD choices.
