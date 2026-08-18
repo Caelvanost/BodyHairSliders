@@ -17,6 +17,7 @@
             <plugin name="More Pubes for SlaveTats"><description>Enables 48 female pubic-hair textures from More Pubes for SlaveTats. SlaveTats itself is not required by BodyHairSliders; the original texture pack must remain installed.</description><files><folder source="60 More Pubes for SlaveTats" destination="" priority="60" /></files><typeDescriptor><dependencyType><defaultType name="Optional" /><patterns><pattern><dependencies operator="And"><fileDependency file="textures\actors\character\slavetats\ZckeZckTPubicHair\ZckeZcktPubic00Heart.dds" state="Active" /></dependencies><type name="Recommended" /></pattern></patterns></dependencyType></typeDescriptor></plugin>
             <plugin name="Natural Pubic Hairstyles"><description>Enables the 65 female RaceMenu body-paint pubic hairstyles supplied by the standard 2K/4K Natural Pubic Hairstyles variants.</description><files><folder source="70 Natural Pubic Hairstyles" destination="" priority="70" /></files><typeDescriptor><dependencyType><defaultType name="Optional" /><patterns><pattern><dependencies operator="And"><fileDependency file="NaturalPubicHairstyles.esp" state="Active" /></dependencies><type name="Recommended" /></pattern></patterns></dependencyType></typeDescriptor></plugin>
             <plugin name="Natural Pubic Hairstyles - UBE"><description>Enables the 65 female pubic hairstyles supplied by the UBE 2K/4K Natural Pubic Hairstyles variants.</description><files><folder source="80 Natural Pubic Hairstyles UBE" destination="" priority="80" /></files><typeDescriptor><dependencyType><defaultType name="Optional" /><patterns><pattern><dependencies operator="And"><fileDependency file="UBENaturalPubicHairstyles.esp" state="Active" /></dependencies><type name="Recommended" /></pattern></patterns></dependencyType></typeDescriptor></plugin>
+            <plugin name="Body Hair Overlays for Male and Female"><description>Enables the BH extra variants pack for both sexes: Full Body Hair plus separate Arm Hair and Leg Hair overlays.</description><files><folder source="90 Body Hair Overlays Male Female" destination="" priority="90" /></files><typeDescriptor><dependencyType><defaultType name="Optional" /><patterns><pattern><dependencies operator="And"><fileDependency file="BH_Body.esp" state="Active" /></dependencies><type name="Recommended" /></pattern></patterns></dependencyType></typeDescriptor></plugin>
           </plugins>
         </group>
       </optionalFileGroups>
@@ -27,7 +28,7 @@
           <plugins order="Explicit">
             <plugin name="Yes - Extended overlay slots (Recommended)">
               <description>Installs a minimal skee64_custom.ini with Body=20, Hands=10 and Feet=10 overlay slots. Recommended when BodyHairSliders reports no free RaceMenu overlay slots.</description>
-              <files><folder source="90 Extended Overlay Slots" destination="" priority="90" /></files>
+              <files><folder source="100 Extended Overlay Slots" destination="" priority="100" /></files>
               <typeDescriptor><type name="Recommended" /></typeDescriptor>
             </plugin>
             <plugin name="No - Keep my existing RaceMenu overlay configuration">
