@@ -81,7 +81,7 @@ try {
 } catch { throw "Invalid staged FOMOD XML: $($_.Exception.Message)" }
 
 New-Item -ItemType Directory -Force -Path $Dist | Out-Null
-$Zip = Join-Path $Dist "BodyHairSliders-v$Version-FOMOD.zip"
+$Zip = Join-Path $Dist "BodyHairSliders-v$Version-SE-1.6.640-RM-0.4.19.14-TEST-FOMOD.zip"
 if (Test-Path -LiteralPath $Zip) { Remove-Item -LiteralPath $Zip -Force }
 Compress-Archive -Path (Join-Path $Stage "*") -DestinationPath $Zip -CompressionLevel Optimal -Force
 
@@ -111,5 +111,5 @@ try {
 } finally { $Archive.Dispose() }
 
 Write-Host ""
-Write-Host "OK - verified FOMOD package created:" -ForegroundColor Green
+Write-Host "OK - verified Skyrim 1.6.640 / RaceMenu 0.4.19.14 TEST FOMOD package created:" -ForegroundColor Green
 Write-Host $Zip
