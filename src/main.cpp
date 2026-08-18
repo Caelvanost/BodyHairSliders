@@ -53,6 +53,10 @@ namespace
             SKSE::log::error("PoC: player unavailable");
             return;
         }
+        if (!BHS::RaceMenuIntegration::GetSingleton().IsModern()) {
+            SKSE::log::warn("PoC skipped because the modern SKEE backend is not active");
+            return;
+        }
 
         const auto styles = settings.GetStylesForRegion(settings.proofOfConceptRegion, settings.proofOfConceptSex);
         if (styles.empty()) {
@@ -81,9 +85,12 @@ namespace
         switch (message->type) {
         case SKSE::MessagingInterface::kDataLoaded:
             BHS::Settings::GetSingleton().Load();
-            BHS::RaceMenuIntegration::GetSingleton().Initialize();
-            LogOverlayCapacity();
-            SKSE::log::info("BodyHairSliders data-loaded initialization complete");
+            if (BHS::RaceMenuIntegration::GetSingleton().Initialize()) {
+                LogOverlayCapacity();
+                SKSE::log::info("BodyHairSliders data-loaded initialization complete");
+            } else {
+                SKSE::log::error("BodyHairSliders RaceMenu integration unavailable; sliders will not apply overlays");
+            }
             break;
         case SKSE::MessagingInterface::kPostLoadGame:
             RunProofOfConcept();
@@ -100,7 +107,9 @@ SKSEPluginLoad(const SKSE::LoadInterface* skse)
     InitializeLog();
     SKSE::Init(skse);
 
-    SKSE::log::info("BodyHairSliders v{} loading", BHS_VERSION_STRING);
+    const auto runtime = REL::Module::get().version();
+    SKSE::log::info("BodyHairSliders v{} loading - unified runtime build", BHS_VERSION_STRING);
+    SKSE::log::info("Detected Skyrim runtime: {}", runtime.string());
 
     if (const auto papyrus = SKSE::GetPapyrusInterface()) {
         papyrus->Register(BHS::PapyrusAPI::Register);
