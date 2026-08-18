@@ -54,15 +54,13 @@ if exist "package\SKSE\Plugins\BodyHairSliders.dll" del /q "package\SKSE\Plugins
 if exist "package\SKSE\Plugins\BodyHairSliders\providers" rmdir /s /q "package\SKSE\Plugins\BodyHairSliders\providers"
 if exist "package\Scripts\BodyHairSliders.pex" del /q "package\Scripts\BodyHairSliders.pex"
 if exist "package\Scripts\BodyHairSlidersRaceMenu.pex" del /q "package\Scripts\BodyHairSlidersRaceMenu.pex"
-if exist "package\Scripts\ak_all_in_one_script.pex" del /q "package\Scripts\ak_all_in_one_script.pex"
-if exist "package\Scripts\Source\ak_all_in_one_script.psc" del /q "package\Scripts\Source\ak_all_in_one_script.psc"
 
 if not exist "package\SKSE\Plugins" mkdir "package\SKSE\Plugins"
 if not exist "package\Scripts" mkdir "package\Scripts"
 if not exist "package\Scripts\Source" mkdir "package\Scripts\Source"
 if not exist "dist" mkdir "dist"
 
-echo Building BodyHairSliders v%BHS_VERSION%
+echo Building BodyHairSliders v%BHS_VERSION% - unified runtime support
 echo [1/5] Configuring C++...
 cmake -S . -B build ^
   -DCMAKE_BUILD_TYPE=Release ^
@@ -80,10 +78,18 @@ if not exist "package\SKSE\Plugins\BodyHairSliders.dll" (
 echo [3/5] Compiling Papyrus API declarations...
 "%PAPYRUS_COMPILER%" "%PAPYRUS_SRC%\BodyHairSliders.psc" -f="%PAPYRUS_FLAGS%" -i="%PAPYRUS_SRC%;%PAPYRUS_STUBS%;%PAPYRUS_VANILLA%" -o="%PAPYRUS_OUT%"
 if errorlevel 1 exit /b 1
+if not exist "%PAPYRUS_OUT%\BodyHairSliders.pex" (
+  echo [ERROR] BodyHairSliders.pex was not generated.
+  exit /b 1
+)
 
 echo [4/5] Compiling dedicated RaceMenu frontend...
 "%PAPYRUS_COMPILER%" "%PAPYRUS_SRC%\BodyHairSlidersRaceMenu.psc" -f="%PAPYRUS_FLAGS%" -i="%PAPYRUS_SRC%;%PAPYRUS_STUBS%;%PAPYRUS_VANILLA%" -o="%PAPYRUS_OUT%"
 if errorlevel 1 exit /b 1
+if not exist "%PAPYRUS_OUT%\BodyHairSlidersRaceMenu.pex" (
+  echo [ERROR] BodyHairSlidersRaceMenu.pex was not generated.
+  exit /b 1
+)
 
 copy /Y "%PAPYRUS_SRC%\BodyHairSliders.psc" "package\Scripts\Source\BodyHairSliders.psc" >nul
 copy /Y "%PAPYRUS_SRC%\BodyHairSlidersRaceMenu.psc" "package\Scripts\Source\BodyHairSlidersRaceMenu.psc" >nul
