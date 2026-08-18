@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <fomod>
-  <Name>BodyHairSliders</Name>
+  <Name>BodyHairSliders - Skyrim 1.6.640 / RaceMenu 0.4.19.14 TEST</Name>
   <Author>Caelvanost</Author>
   <Version>@VERSION@</Version>
-  <Description>Unified RaceMenu body-hair sliders with optional provider packs selected through the FOMOD installer.</Description>
+  <Description>Compatibility test build for Skyrim 1.6.640 with RaceMenu 0.4.19.14. Uses the SKEE v2 wrapper backend and refuses unsupported Skyrim runtimes.</Description>
 </fomod>
