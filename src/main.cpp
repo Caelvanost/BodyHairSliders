@@ -10,6 +10,9 @@
 
 namespace
 {
+    constexpr REL::Version kTargetRuntime{ 1, 6, 640, 0 };
+    constexpr std::string_view kTargetRaceMenu = "0.4.19.14";
+
     void InitializeLog()
     {
         auto path = SKSE::log::log_directory();
@@ -22,6 +25,26 @@ namespace
         spdlog::set_default_logger(std::move(logger));
         spdlog::set_level(spdlog::level::info);
         spdlog::flush_on(spdlog::level::info);
+    }
+
+    bool ValidateRuntime()
+    {
+        const auto runtime = REL::Module::get().version();
+        SKSE::log::info(
+            "Compatibility target: Skyrim {} / RaceMenu {}",
+            kTargetRuntime.string(),
+            kTargetRaceMenu);
+        SKSE::log::info("Detected Skyrim runtime: {}", runtime.string());
+
+        if (runtime != kTargetRuntime) {
+            SKSE::log::error(
+                "This test build only supports Skyrim {}. Detected {}. Refusing to load to avoid using the wrong compatibility branch.",
+                kTargetRuntime.string(),
+                runtime.string());
+            return false;
+        }
+
+        return true;
     }
 
     void LogOverlayCapacity()
@@ -81,9 +104,12 @@ namespace
         switch (message->type) {
         case SKSE::MessagingInterface::kDataLoaded:
             BHS::Settings::GetSingleton().Load();
-            BHS::RaceMenuIntegration::GetSingleton().Initialize();
-            LogOverlayCapacity();
-            SKSE::log::info("BodyHairSliders data-loaded initialization complete");
+            if (BHS::RaceMenuIntegration::GetSingleton().Initialize()) {
+                LogOverlayCapacity();
+                SKSE::log::info("BodyHairSliders data-loaded initialization complete");
+            } else {
+                SKSE::log::error("BodyHairSliders RaceMenu integration unavailable; sliders will not apply overlays");
+            }
             break;
         case SKSE::MessagingInterface::kPostLoadGame:
             RunProofOfConcept();
@@ -100,7 +126,11 @@ SKSEPluginLoad(const SKSE::LoadInterface* skse)
     InitializeLog();
     SKSE::Init(skse);
 
-    SKSE::log::info("BodyHairSliders v{} loading", BHS_VERSION_STRING);
+    SKSE::log::info("BodyHairSliders v{} loading - Skyrim 1.6.640 / RaceMenu 0.4.19.14 TEST", BHS_VERSION_STRING);
+
+    if (!ValidateRuntime()) {
+        return false;
+    }
 
     if (const auto papyrus = SKSE::GetPapyrusInterface()) {
         papyrus->Register(BHS::PapyrusAPI::Register);
