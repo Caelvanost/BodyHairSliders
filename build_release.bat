@@ -31,7 +31,7 @@ set "PAPYRUS_VANILLA=%SKYRIM_DIR%\Data\Source\Scripts"
 set "PAPYRUS_SRC=%CD%\papyrus"
 set "PAPYRUS_STUBS=%CD%\compiler_stubs"
 set "PAPYRUS_OUT=%CD%\package\Scripts"
-set "ZIP_PATH=dist\BodyHairSliders-v%BHS_VERSION%-FOMOD.zip"
+set "ZIP_PATH=dist\BodyHairSliders-v%BHS_VERSION%-SE-1.6.640-RM-0.4.19.14-TEST-FOMOD.zip"
 
 if not exist "%PAPYRUS_COMPILER%" (
   echo [ERROR] PapyrusCompiler.exe not found:
@@ -62,7 +62,7 @@ if not exist "package\Scripts" mkdir "package\Scripts"
 if not exist "package\Scripts\Source" mkdir "package\Scripts\Source"
 if not exist "dist" mkdir "dist"
 
-echo Building BodyHairSliders v%BHS_VERSION%
+echo Building BodyHairSliders v%BHS_VERSION% - Skyrim 1.6.640 / RaceMenu 0.4.19.14 TEST
 echo [1/5] Configuring C++...
 cmake -S . -B build ^
   -DCMAKE_BUILD_TYPE=Release ^
@@ -80,10 +80,18 @@ if not exist "package\SKSE\Plugins\BodyHairSliders.dll" (
 echo [3/5] Compiling Papyrus API declarations...
 "%PAPYRUS_COMPILER%" "%PAPYRUS_SRC%\BodyHairSliders.psc" -f="%PAPYRUS_FLAGS%" -i="%PAPYRUS_SRC%;%PAPYRUS_STUBS%;%PAPYRUS_VANILLA%" -o="%PAPYRUS_OUT%"
 if errorlevel 1 exit /b 1
+if not exist "package\Scripts\BodyHairSliders.pex" (
+  echo [ERROR] Papyrus compiler did not produce BodyHairSliders.pex.
+  exit /b 1
+)
 
 echo [4/5] Compiling dedicated RaceMenu frontend...
 "%PAPYRUS_COMPILER%" "%PAPYRUS_SRC%\BodyHairSlidersRaceMenu.psc" -f="%PAPYRUS_FLAGS%" -i="%PAPYRUS_SRC%;%PAPYRUS_STUBS%;%PAPYRUS_VANILLA%" -o="%PAPYRUS_OUT%"
 if errorlevel 1 exit /b 1
+if not exist "package\Scripts\BodyHairSlidersRaceMenu.pex" (
+  echo [ERROR] Papyrus compiler did not produce BodyHairSlidersRaceMenu.pex.
+  exit /b 1
+)
 
 copy /Y "%PAPYRUS_SRC%\BodyHairSliders.psc" "package\Scripts\Source\BodyHairSliders.psc" >nul
 copy /Y "%PAPYRUS_SRC%\BodyHairSlidersRaceMenu.psc" "package\Scripts\Source\BodyHairSlidersRaceMenu.psc" >nul
