@@ -2,25 +2,32 @@
 
 ## Nexus file name
 
-`BodyHairSliders-v0.8.0-SE-1.6.640-RM-0.4.19.14-TEST-FOMOD.zip`
+`BodyHairSliders-v0.8.1-SE-1.6.640-RM-0.4.19.14-TEST-FOMOD.zip`
 
 ## Suggested Nexus file label
 
-**Body Hair Sliders v0.8.0 - Skyrim 1.6.640 / RaceMenu 0.4.19.14 TEST**
+**Body Hair Sliders v0.8.1 - Skyrim 1.6.640 / RaceMenu 0.4.19.14 TEST**
 
 ## Suggested short description
 
-Experimental compatibility build for Skyrim 1.6.640 + RaceMenu 0.4.19.14. Validates the SKEE v2 wrapper ABI before use and refuses other Skyrim runtimes. Testing only; please report BodyHairSliders.log and crashlogs.
+Compatibility test build for Skyrim 1.6.640 + RaceMenu 0.4.19.14. v0.8.1 adds a safe NiOverride Papyrus fallback for installations where RaceMenu exposes SKEE Overlay/Override v1 instead of the modern wrapper ABI.
 
-## Suggested file description
+## What changed from v0.8.0
 
-Experimental compatibility build for **Skyrim SE/AE 1.6.640** with **RaceMenu 0.4.19.14**.
+A field report from Skyrim 1.6.640 + RaceMenu 0.4.19.14 showed:
 
-This build uses RaceMenu's SKEE wrapper-generation interfaces and validates their ABI versions before BodyHairSliders performs any overlay calls. It expects `Overlay v2` and `Override v2` and will refuse to activate the RaceMenu backend if an incompatible SKEE generation is detected.
+```text
+SKEE interface versions: Overlay=1 Override=1 ActorUpdate=1
+```
 
-The DLL also verifies the Skyrim executable version and refuses to load on runtimes other than **1.6.640**. This is intentional so compatibility reports cannot be mixed between different Skyrim/RaceMenu generations.
+v0.8.0 incorrectly required Overlay v2 / Override v2 and therefore disabled overlay application. v0.8.1 now selects the backend from the actual SKEE ABI:
 
-**Do not use this archive on Skyrim 1.5.97 or other Skyrim 1.6.x runtimes.** Use the matching BodyHairSliders build instead.
+```text
+Overlay v1 + Override v1 -> legacy-papyrus (NiOverride)
+Overlay v2+ + Override v2+ -> modern C++ wrapper backend
+```
+
+The DLL remains strictly locked to Skyrim **1.6.640** for this compatibility test branch.
 
 ### Intended test environment
 
@@ -32,37 +39,27 @@ The DLL also verifies the Skyrim executable version and refuses to load on runti
 
 ### What to test
 
-1. Launch the game and load a save.
-2. Check `BodyHairSliders.log` before opening RaceMenu.
+1. Launch and load a save.
+2. Check `BodyHairSliders.log`.
 3. Open RaceMenu with `showracemenu`.
-4. Confirm RaceMenu opens without CTD or freeze.
-5. Open the **Hair** category and confirm BodyHairSliders sliders appear.
-6. Test changing at least one body-hair style.
-7. Test `None / Shaved`.
-8. Test `Body Hair Color`.
-9. Close RaceMenu, reopen it and confirm the currently applied style is detected correctly.
-10. If using HIMBO, test Body, Hands and Feet regions if possible.
+4. Confirm the Hair sliders appear.
+5. Change several body-hair styles and confirm overlays appear immediately.
+6. Test `None / Shaved`.
+7. Test `Body Hair Color`.
+8. Close and reopen RaceMenu and verify current style detection.
 
-### Expected log lines
+### Expected log for the reported 1.6.640 configuration
 
 ```text
-BodyHairSliders v0.8.0 loading - Skyrim 1.6.640 / RaceMenu 0.4.19.14 TEST
+BodyHairSliders v0.8.1 loading - Skyrim 1.6.640 / RaceMenu 0.4.19.14 TEST
 Compatibility target: Skyrim 1-6-640-0 / RaceMenu 0.4.19.14
 Detected Skyrim runtime: 1-6-640-0
-SKEE interface versions: Overlay=2 Override=2 ActorUpdate=2
-SKEE acquired: Overlay v2 Override v2 ActorUpdate v2 backend=rm-0.4.19.14-wrapper
+SKEE interface versions: Overlay=1 Override=1 ActorUpdate=1
+Selected SKEE backend: legacy-papyrus (Overlay v1 Override v1 ActorUpdate v1)
 ```
 
-### If you crash or freeze
+If RaceMenu exposes wrapper interfaces instead, `Selected SKEE backend: modern (...)` is also valid.
 
-Please provide:
+### If it fails
 
-- `Documents/My Games/Skyrim Special Edition/SKSE/BodyHairSliders.log`
-- the full CrashLoggerSSE / NetScriptFramework crash log if one is generated
-- exact Skyrim version
-- exact SKSE version
-- exact RaceMenu version
-- whether the problem occurs when loading the game, opening RaceMenu, or changing a BodyHairSliders slider
-- which BodyHairSliders providers were selected in the FOMOD
-
-Please make sure no other BodyHairSliders release/test build is enabled at the same time. The first log line must say `BodyHairSliders v0.8.0 loading` for this test archive.
+Please provide the full `BodyHairSliders.log`, crashlog if any, exact Skyrim/SKSE/RaceMenu versions, selected providers, and whether the failure occurs when opening RaceMenu or changing a slider. Make sure no other BodyHairSliders build is enabled. The first log line must identify **v0.8.1**.
