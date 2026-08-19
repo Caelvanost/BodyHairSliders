@@ -2,6 +2,7 @@
 
 #include "HairColor.h"
 #include "OverlayManager.h"
+#include "RaceMenuIntegration.h"
 #include "Settings.h"
 
 namespace BHS::PapyrusAPI
@@ -27,12 +28,78 @@ namespace BHS::PapyrusAPI
             return female ? "female" : "male";
         }
 
+        std::string NormalizeTexturePath(std::string path)
+        {
+            std::replace(path.begin(), path.end(), '/', '\\');
+            std::transform(path.begin(), path.end(), path.begin(), [](unsigned char c) {
+                return static_cast<char>(std::tolower(c));
+            });
+            if (path.starts_with("data\\")) {
+                path.erase(0, 5);
+            }
+            return path;
+        }
+
+        std::string ToSKEETexturePath(std::string path)
+        {
+            std::replace(path.begin(), path.end(), '/', '\\');
+            if (path.starts_with("Data\\") || path.starts_with("data\\")) {
+                path.erase(0, 5);
+            }
+            return path;
+        }
+
+        std::uint32_t PackRGB(const RGBA& color)
+        {
+            const auto byte = [](float value) {
+                return static_cast<std::uint32_t>(std::clamp(value, 0.0F, 1.0F) * 255.0F + 0.5F);
+            };
+            return (byte(color.r) << 16) | (byte(color.g) << 8) | byte(color.b);
+        }
+
         RGBA CurrentColor(RE::Actor* actor)
         {
             if (g_currentColorIndex <= 0) {
                 return HairColor::FromActor(actor);
             }
             return HairColor::Preset(static_cast<std::size_t>(g_currentColorIndex - 1));
+        }
+
+        std::string SelectTexture(const OverlayStyle& style, const RGBA& color)
+        {
+            if (!style.texture.empty()) {
+                return style.texture;
+            }
+
+            const float luminance = 0.2126F * color.r + 0.7152F * color.g + 0.0722F * color.b;
+            if (luminance >= 0.55F && !style.textureFair.empty()) {
+                return style.textureFair;
+            }
+            if (!style.textureDark.empty()) {
+                return style.textureDark;
+            }
+            return style.textureFair;
+        }
+
+        bool MatchesKnownTexture(std::string_view candidate, const OverlayStyle& style)
+        {
+            const auto normalizedCandidate = NormalizeTexturePath(std::string(candidate));
+            for (const auto* texture : { &style.texture, &style.textureDark, &style.textureFair }) {
+                if (!texture->empty() && NormalizeTexturePath(*texture) == normalizedCandidate) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        const OverlayStyle* GetStyle(std::string_view region, std::int32_t index, bool female)
+        {
+            if (index <= 0) {
+                return nullptr;
+            }
+            const auto styles = Settings::GetSingleton().GetStylesForRegion(region, SexName(female));
+            const auto zeroBased = static_cast<std::size_t>(index - 1);
+            return zeroBased < styles.size() ? styles[zeroBased] : nullptr;
         }
 
         std::int32_t GetStyleCount(RE::StaticFunctionTag*, RE::BSFixedString region, bool female)
@@ -50,20 +117,68 @@ namespace BHS::PapyrusAPI
                 return RE::BSFixedString("None / Shaved");
             }
 
-            const auto styles = Settings::GetSingleton().GetStylesForRegion(ToString(region), SexName(female));
-            const auto zeroBased = static_cast<std::size_t>(index - 1);
-            if (zeroBased >= styles.size()) {
+            const auto* style = GetStyle(ToString(region), index, female);
+            if (!style) {
                 return RE::BSFixedString("Invalid");
             }
 
-            const auto* style = styles[zeroBased];
             const auto label = style->provider + " - " + style->label;
             return RE::BSFixedString(label.c_str());
+        }
+
+        bool IsLegacySKEE(RE::StaticFunctionTag*)
+        {
+            return RaceMenuIntegration::GetSingleton().IsLegacy();
+        }
+
+        RE::BSFixedString GetStyleTexture(RE::StaticFunctionTag*, RE::BSFixedString region, std::int32_t index, bool female)
+        {
+            const auto* style = GetStyle(ToString(region), index, female);
+            auto* player = RE::PlayerCharacter::GetSingleton();
+            if (!style || !player) {
+                return RE::BSFixedString("");
+            }
+
+            const auto texture = ToSKEETexturePath(SelectTexture(*style, CurrentColor(player)));
+            return RE::BSFixedString(texture.c_str());
+        }
+
+        RE::BSFixedString GetStyleLocation(RE::StaticFunctionTag*, RE::BSFixedString region, std::int32_t index, bool female)
+        {
+            const auto* style = GetStyle(ToString(region), index, female);
+            return style ? RE::BSFixedString(style->location.c_str()) : RE::BSFixedString("");
+        }
+
+        std::int32_t FindStyleIndexByTexture(RE::StaticFunctionTag*, RE::BSFixedString region, RE::BSFixedString texture, bool female)
+        {
+            const auto textureName = ToString(texture);
+            if (textureName.empty()) {
+                return 0;
+            }
+
+            const auto styles = Settings::GetSingleton().GetStylesForRegion(ToString(region), SexName(female));
+            for (std::size_t i = 0; i < styles.size(); ++i) {
+                if (styles[i] && MatchesKnownTexture(textureName, *styles[i])) {
+                    return static_cast<std::int32_t>(i + 1);
+                }
+            }
+            return 0;
+        }
+
+        std::int32_t GetCurrentColorRGB(RE::StaticFunctionTag*)
+        {
+            auto* player = RE::PlayerCharacter::GetSingleton();
+            return player ? static_cast<std::int32_t>(PackRGB(CurrentColor(player))) : 0;
         }
 
         std::int32_t GetCurrentStyleIndex(RE::StaticFunctionTag*, RE::BSFixedString region, bool female)
         {
             const auto regionName = ToString(region);
+            if (RaceMenuIntegration::GetSingleton().IsLegacy()) {
+                const auto it = g_currentSelections.find(regionName);
+                return it != g_currentSelections.end() ? it->second : 0;
+            }
+
             auto* player = RE::PlayerCharacter::GetSingleton();
             if (!player) {
                 return 0;
@@ -77,6 +192,11 @@ namespace BHS::PapyrusAPI
 
         bool ApplyStyleInternal(std::string_view region, std::int32_t index, bool female)
         {
+            if (RaceMenuIntegration::GetSingleton().IsLegacy()) {
+                SKSE::log::warn("Native ApplyStyle ignored on legacy SKEE; RaceMenu frontend must use NiOverride fallback");
+                return false;
+            }
+
             auto* player = RE::PlayerCharacter::GetSingleton();
             if (!player) {
                 return false;
@@ -142,13 +262,19 @@ namespace BHS::PapyrusAPI
             }
 
             g_currentColorIndex = index;
-            ReapplyPlayerSelections();
+            if (!RaceMenuIntegration::GetSingleton().IsLegacy()) {
+                ReapplyPlayerSelections();
+            }
             return true;
         }
     }
 
     void ReapplyPlayerSelections()
     {
+        if (RaceMenuIntegration::GetSingleton().IsLegacy()) {
+            return;
+        }
+
         const auto selections = g_currentSelections;
         for (const auto& [region, index] : selections) {
             if (index > 0) {
@@ -168,6 +294,11 @@ namespace BHS::PapyrusAPI
         vm->RegisterFunction("GetStyleName", script, GetStyleName);
         vm->RegisterFunction("GetCurrentStyleIndex", script, GetCurrentStyleIndex);
         vm->RegisterFunction("ApplyStyle", script, ApplyStyle);
+        vm->RegisterFunction("IsLegacySKEE", script, IsLegacySKEE);
+        vm->RegisterFunction("GetStyleTexture", script, GetStyleTexture);
+        vm->RegisterFunction("GetStyleLocation", script, GetStyleLocation);
+        vm->RegisterFunction("FindStyleIndexByTexture", script, FindStyleIndexByTexture);
+        vm->RegisterFunction("GetCurrentColorRGB", script, GetCurrentColorRGB);
         vm->RegisterFunction("GetColorCount", script, GetColorCount);
         vm->RegisterFunction("GetColorName", script, GetColorName);
         vm->RegisterFunction("GetCurrentColorIndex", script, GetCurrentColorIndex);
