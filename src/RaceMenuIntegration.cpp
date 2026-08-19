@@ -10,7 +10,7 @@ namespace BHS
 
     bool RaceMenuIntegration::Initialize()
     {
-        available_ = false;
+        backend_ = Backend::Unavailable;
         overlay_ = nullptr;
         override_ = nullptr;
         actorUpdate_ = nullptr;
@@ -39,18 +39,13 @@ namespace BHS
             return false;
         }
 
-        // RaceMenu 0.4.19.14 exposes the wrapper-generation SKEE interfaces.
-        // Query through the stable base interface first so we never dispatch through
-        // an incompatible vtable if a user accidentally installs another RaceMenu build.
         auto* overlayBase = exchange.interfaceMap->QueryInterface("Overlay");
         auto* overrideBase = exchange.interfaceMap->QueryInterface("Override");
         auto* actorUpdateBase = exchange.interfaceMap->QueryInterface("ActorUpdateManager");
 
         if (!overlayBase || !overrideBase) {
-            SKSE::log::error(
-                "Required SKEE interfaces missing (Overlay={} Override={})",
-                static_cast<const void*>(overlayBase),
-                static_cast<const void*>(overrideBase));
+            SKSE::log::error("Required SKEE interfaces missing (Overlay={} Override={})",
+                static_cast<const void*>(overlayBase), static_cast<const void*>(overrideBase));
             return false;
         }
 
@@ -64,32 +59,34 @@ namespace BHS
             overrideVersion,
             actorUpdateVersion);
 
-        constexpr std::uint32_t kExpectedWrapperVersion = 2;
-        if (overlayVersion != kExpectedWrapperVersion || overrideVersion != kExpectedWrapperVersion) {
-            SKSE::log::error(
-                "Unsupported RaceMenu/SKEE ABI for the Skyrim 1.6.640 test build: Overlay v{} Override v{} (expected v2/v2 from RaceMenu 0.4.19.14)",
-                overlayVersion,
-                overrideVersion);
-            return false;
+        if (overlayVersion >= 2 && overrideVersion >= 2) {
+            overlay_ = static_cast<SKEE::IOverlayInterface*>(overlayBase);
+            override_ = static_cast<SKEE::IOverrideInterface*>(overrideBase);
+            if (actorUpdateBase && actorUpdateVersion >= 2) {
+                actorUpdate_ = static_cast<SKEE::IActorUpdateManager*>(actorUpdateBase);
+            }
+            backend_ = Backend::Modern;
+
+            SKSE::log::info(
+                "Selected SKEE backend: modern (Overlay v{} Override v{} ActorUpdate v{})",
+                overlayVersion, overrideVersion, actorUpdateVersion);
+            return true;
         }
 
-        overlay_ = static_cast<SKEE::IOverlayInterface*>(overlayBase);
-        override_ = static_cast<SKEE::IOverrideInterface*>(overrideBase);
-
-        if (actorUpdateBase && actorUpdateVersion == kExpectedWrapperVersion) {
-            actorUpdate_ = static_cast<SKEE::IActorUpdateManager*>(actorUpdateBase);
-        } else if (actorUpdateBase) {
-            SKSE::log::warn(
-                "ActorUpdateManager v{} does not match expected v2; refresh calls will use available fallback paths",
-                actorUpdateVersion);
+        if (overlayVersion == 1 && overrideVersion == 1) {
+            // RaceMenu 0.4.19.14 on Skyrim 1.6.640 has been observed in the field
+            // exposing the original v1 Overlay/Override ABI. Do not cast those
+            // objects to the modern wrapper interfaces; use NiOverride Papyrus.
+            backend_ = Backend::LegacyPapyrus;
+            SKSE::log::info(
+                "Selected SKEE backend: legacy-papyrus (Overlay v{} Override v{} ActorUpdate v{})",
+                overlayVersion, overrideVersion, actorUpdateVersion);
+            return true;
         }
 
-        available_ = true;
-        SKSE::log::info(
-            "SKEE acquired: Overlay v{} Override v{} ActorUpdate v{} backend=rm-0.4.19.14-wrapper",
-            overlayVersion,
-            overrideVersion,
-            actorUpdateVersion);
-        return true;
+        SKSE::log::error(
+            "Unsupported SKEE interface combination on Skyrim 1.6.640: Overlay v{} Override v{} ActorUpdate v{}",
+            overlayVersion, overrideVersion, actorUpdateVersion);
+        return false;
     }
 }
