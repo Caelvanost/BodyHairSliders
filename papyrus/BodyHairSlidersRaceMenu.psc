@@ -11,6 +11,21 @@ Int BHS_ShaderTexture = 9
 Int BHS_Unindexed = 255
 String BHS_DefaultOverlayTexture = "textures\\actors\\character\\overlays\\default.dds"
 
+; Cache legacy selections so color changes do not rescan every Body/Hands/Feet
+; overlay slot for every body-hair region. These values are refreshed when
+; RaceMenu builds the sliders and whenever a BodyHairSliders slider changes.
+Int BHS_LegacyFullBody = 0
+Int BHS_LegacyPubic = 0
+Int BHS_LegacyArmpits = 0
+Int BHS_LegacyChest = 0
+Int BHS_LegacyStomach = 0
+Int BHS_LegacyBack = 0
+Int BHS_LegacyArms = 0
+Int BHS_LegacyHands = 0
+Int BHS_LegacyLegs = 0
+Int BHS_LegacyFeet = 0
+Int BHS_LegacyButt = 0
+
 Event OnBodyPaintRequest()
 EndEvent
 
@@ -35,21 +50,54 @@ Event OnSliderRequest(Actor player, ActorBase playerBase, Race actorRace, Bool i
     EndIf
 EndEvent
 
+Function BHS_SetLegacyCachedStyle(String region, Int styleIndex)
+    If region == "fullbody"
+        BHS_LegacyFullBody = styleIndex
+    ElseIf region == "pubic"
+        BHS_LegacyPubic = styleIndex
+    ElseIf region == "armpits"
+        BHS_LegacyArmpits = styleIndex
+    ElseIf region == "chest"
+        BHS_LegacyChest = styleIndex
+    ElseIf region == "stomach"
+        BHS_LegacyStomach = styleIndex
+    ElseIf region == "back"
+        BHS_LegacyBack = styleIndex
+    ElseIf region == "arms"
+        BHS_LegacyArms = styleIndex
+    ElseIf region == "hands"
+        BHS_LegacyHands = styleIndex
+    ElseIf region == "legs"
+        BHS_LegacyLegs = styleIndex
+    ElseIf region == "feet"
+        BHS_LegacyFeet = styleIndex
+    ElseIf region == "butt"
+        BHS_LegacyButt = styleIndex
+    EndIf
+EndFunction
+
 Function BHS_AddRegionSlider(String displayName, String region, String callbackName, Bool isFemale)
     Int styleCount = BodyHairSliders.GetStyleCount(region, isFemale)
     If styleCount <= 0
+        If BodyHairSliders.IsLegacySKEE()
+            BHS_SetLegacyCachedStyle(region, 0)
+        EndIf
         Return
     EndIf
 
     Int current = 0
     If BodyHairSliders.IsLegacySKEE()
         current = BHS_GetLegacyCurrentStyle(region, isFemale)
+        BHS_SetLegacyCachedStyle(region, current)
     Else
         current = BodyHairSliders.GetCurrentStyleIndex(region, isFemale)
     EndIf
 
     If current < 0 || current > styleCount
         current = 0
+        If BodyHairSliders.IsLegacySKEE()
+            BHS_SetLegacyCachedStyle(region, 0)
+        EndIf
     EndIf
 
     AddSlider(displayName, CATEGORY_HAIR, callbackName, 0.0, styleCount as Float, 1.0, current as Float)
@@ -94,7 +142,8 @@ Function BHS_ApplyRegion(String region, Float value)
     EndIf
 
     If BodyHairSliders.IsLegacySKEE()
-        BHS_ApplyRegionLegacy(region, requested, BHS_IsFemale)
+        BHS_SetLegacyCachedStyle(region, requested)
+        BHS_ApplyRegionLegacy(region, requested, BHS_IsFemale, True)
     Else
         BodyHairSliders.ApplyStyle(region, requested, BHS_IsFemale)
     EndIf
@@ -113,17 +162,57 @@ Function BHS_ApplyColor(Float value)
     BodyHairSliders.SetColorIndex(requested)
 
     If BodyHairSliders.IsLegacySKEE()
-        BHS_ReapplyLegacyRegion("fullbody")
-        BHS_ReapplyLegacyRegion("pubic")
-        BHS_ReapplyLegacyRegion("armpits")
-        BHS_ReapplyLegacyRegion("chest")
-        BHS_ReapplyLegacyRegion("stomach")
-        BHS_ReapplyLegacyRegion("back")
-        BHS_ReapplyLegacyRegion("arms")
-        BHS_ReapplyLegacyRegion("hands")
-        BHS_ReapplyLegacyRegion("legs")
-        BHS_ReapplyLegacyRegion("feet")
-        BHS_ReapplyLegacyRegion("butt")
+        ; Recolor only cached active BodyHairSliders regions. Each call updates the
+        ; saved NiOverride values but deliberately defers the expensive actor refresh.
+        Bool changed = False
+        If BHS_LegacyFullBody > 0
+            BHS_ApplyRegionLegacy("fullbody", BHS_LegacyFullBody, BHS_IsFemale, False)
+            changed = True
+        EndIf
+        If BHS_LegacyPubic > 0
+            BHS_ApplyRegionLegacy("pubic", BHS_LegacyPubic, BHS_IsFemale, False)
+            changed = True
+        EndIf
+        If BHS_LegacyArmpits > 0
+            BHS_ApplyRegionLegacy("armpits", BHS_LegacyArmpits, BHS_IsFemale, False)
+            changed = True
+        EndIf
+        If BHS_LegacyChest > 0
+            BHS_ApplyRegionLegacy("chest", BHS_LegacyChest, BHS_IsFemale, False)
+            changed = True
+        EndIf
+        If BHS_LegacyStomach > 0
+            BHS_ApplyRegionLegacy("stomach", BHS_LegacyStomach, BHS_IsFemale, False)
+            changed = True
+        EndIf
+        If BHS_LegacyBack > 0
+            BHS_ApplyRegionLegacy("back", BHS_LegacyBack, BHS_IsFemale, False)
+            changed = True
+        EndIf
+        If BHS_LegacyArms > 0
+            BHS_ApplyRegionLegacy("arms", BHS_LegacyArms, BHS_IsFemale, False)
+            changed = True
+        EndIf
+        If BHS_LegacyHands > 0
+            BHS_ApplyRegionLegacy("hands", BHS_LegacyHands, BHS_IsFemale, False)
+            changed = True
+        EndIf
+        If BHS_LegacyLegs > 0
+            BHS_ApplyRegionLegacy("legs", BHS_LegacyLegs, BHS_IsFemale, False)
+            changed = True
+        EndIf
+        If BHS_LegacyFeet > 0
+            BHS_ApplyRegionLegacy("feet", BHS_LegacyFeet, BHS_IsFemale, False)
+            changed = True
+        EndIf
+        If BHS_LegacyButt > 0
+            BHS_ApplyRegionLegacy("butt", BHS_LegacyButt, BHS_IsFemale, False)
+            changed = True
+        EndIf
+
+        If changed
+            NiOverride.ApplyNodeOverrides(Game.GetPlayer())
+        EndIf
     EndIf
 EndFunction
 
@@ -201,9 +290,12 @@ Int Function BHS_FindLegacySlot(String region, String slotLocation, Bool isFemal
     Return freeSlot
 EndFunction
 
-Function BHS_ApplyRegionLegacy(String region, Int requested, Bool isFemale)
+Function BHS_ApplyRegionLegacy(String region, Int requested, Bool isFemale, Bool refreshActor)
     If requested <= 0
         BHS_ClearLegacyRegion(region, isFemale)
+        If refreshActor
+            NiOverride.ApplyNodeOverrides(Game.GetPlayer())
+        EndIf
         Return
     EndIf
 
@@ -224,7 +316,10 @@ Function BHS_ApplyRegionLegacy(String region, Int requested, Bool isFemale)
     NiOverride.AddNodeOverrideString(player, isFemale, nodeName, BHS_ShaderTexture, 0, texture, True)
     NiOverride.AddNodeOverrideInt(player, isFemale, nodeName, BHS_ShaderTintColor, BHS_Unindexed, BodyHairSliders.GetCurrentColorRGB(), True)
     NiOverride.AddNodeOverrideFloat(player, isFemale, nodeName, BHS_ShaderAlpha, BHS_Unindexed, 1.0, True)
-    NiOverride.ApplyNodeOverrides(player)
+
+    If refreshActor
+        NiOverride.ApplyNodeOverrides(player)
+    EndIf
 EndFunction
 
 Function BHS_ClearLegacyLocation(String region, Bool isFemale, String slotLocation)
@@ -252,11 +347,4 @@ Function BHS_ClearLegacyRegion(String region, Bool isFemale)
     BHS_ClearLegacyLocation(region, isFemale, "body")
     BHS_ClearLegacyLocation(region, isFemale, "hand")
     BHS_ClearLegacyLocation(region, isFemale, "feet")
-EndFunction
-
-Function BHS_ReapplyLegacyRegion(String region)
-    Int current = BHS_GetLegacyCurrentStyle(region, BHS_IsFemale)
-    If current > 0
-        BHS_ApplyRegionLegacy(region, current, BHS_IsFemale)
-    EndIf
 EndFunction
