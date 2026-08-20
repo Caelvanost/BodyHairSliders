@@ -1,4 +1,4 @@
-# Nexus Mods publication pack — BodyHairSliders v0.10.0
+# Nexus Mods publication pack — BodyHairSliders v0.10.1
 
 ## Mod name
 
@@ -10,18 +10,15 @@ Adds unified RaceMenu sliders for compatible male and female body-hair overlay p
 
 ## Short description
 
-Body Hair Sliders provides a unified RaceMenu frontend for compatible third-party body-hair overlays. v0.10.0 adds Body Hair Overlays for Male and Female (BH extra variants), including Full Body, Arm and Leg Hair options for both sexes.
+Body Hair Sliders provides a unified RaceMenu frontend for compatible third-party body-hair overlays. v0.10.1 keeps the v0.10.0 provider additions and optimizes color updates on legacy RaceMenu/SKEE v1 configurations.
 
 ## Compatibility
 
-### Supported
+### Supported / intended
 
 - **Skyrim SE 1.5.97** — legacy SKEE v1 path using RaceMenu's `NiOverride` Papyrus API; field-tested successfully by users.
 - **Skyrim SE/AE 1.6.1170** — modern SKEE v2+ C++ wrapper backend.
-
-### Planned validation
-
-- **Skyrim 1.6.640** — dedicated compatibility work exists and will be folded into the supported matrix after field validation.
+- **Skyrim 1.6.640** — dedicated compatibility testing has shown RaceMenu 0.4.19.14 may expose `Overlay v1 / Override v1`; the unified architecture routes that ABI through the legacy NiOverride backend.
 
 The user does not select a Skyrim version in the FOMOD. BodyHairSliders detects the RaceMenu/SKEE interface ABI at runtime:
 
@@ -55,7 +52,7 @@ Existing supported overlays are detected when RaceMenu opens so the sliders refl
 
 ## Supported providers
 
-The v0.10.0 FOMOD supports:
+The v0.10.1 FOMOD supports:
 
 - Nordic Warmaiden Body Hair
 - HIMBO V3 Bodyhair Overlays for Racemenu
@@ -80,7 +77,13 @@ The **BH extra variants** archive is detected through `BH_Body.esp` and supplies
 - Male Arms
 - Male Legs
 
-BodyHairSliders exposes the full-body variants through the new **Full Body Hair** slider and maps the regional variants to **Arm Hair** and **Leg Hair**.
+BodyHairSliders exposes the full-body variants through **Full Body Hair** and maps the regional variants to **Arm Hair** and **Leg Hair**.
+
+## Legacy color performance
+
+v0.10.1 optimizes `Body Hair Color` for the `legacy-papyrus` backend. BodyHairSliders now caches active legacy region selections when RaceMenu opens and whenever a body-hair slider changes. Color changes then update only active overlays and perform one final `NiOverride.ApplyNodeOverrides()` refresh instead of rescanning every Body/Hands/Feet slot for every region and refreshing repeatedly.
+
+The modern SKEE v2+ C++ path is unchanged.
 
 ## Requirements
 
@@ -93,7 +96,7 @@ BodyHairSliders exposes the full-body variants through the new **Full Body Hair*
 
 1. Install SKSE64, Address Library and RaceMenu for your Skyrim runtime.
 2. Install one or more supported body-hair provider mods.
-3. Install `BodyHairSliders-v0.10.0-FOMOD.zip` with Vortex or another FOMOD-capable manager.
+3. Install `BodyHairSliders-v0.10.1-FOMOD.zip` with Vortex or another FOMOD-capable manager.
 4. Select the provider packs actually installed.
 5. Optionally select Extended Overlay Slots if your RaceMenu configuration needs more Body/Hands/Feet slots.
 6. Enable `BodyHairSliders.esp`.
@@ -108,17 +111,17 @@ Log path:
 Documents/My Games/Skyrim Special Edition/SKSE/BodyHairSliders.log
 ```
 
-A v0.10.0 log should begin with lines similar to:
+A v0.10.1 log should begin with lines similar to:
 
 ```text
-BodyHairSliders v0.10.0 loading - unified runtime build
+BodyHairSliders v0.10.1 loading - unified runtime build
 Detected Skyrim runtime: ...
 ```
 
 Legacy RaceMenu/SKEE:
 
 ```text
-SKEE interface versions: Overlay=1 Override=1 ActorUpdate=0
+SKEE interface versions: Overlay=1 Override=1 ActorUpdate=...
 Selected SKEE backend: legacy-papyrus (...)
 ```
 
@@ -131,6 +134,14 @@ Selected SKEE backend: modern (...)
 
 When reporting an issue, include the full log plus exact Skyrim, SKSE and RaceMenu versions.
 
+## Version 0.10.1 changelog
+
+- Optimized `Body Hair Color` updates on the legacy NiOverride backend.
+- Cached active legacy selections to avoid repeated Body/Hands/Feet overlay scans.
+- Recolors only active BodyHairSliders regions.
+- Batches legacy recoloring into a single `NiOverride.ApplyNodeOverrides()` refresh.
+- Leaves the modern SKEE v2+ backend unchanged.
+
 ## Version 0.10.0 changelog
 
 - Added **Body Hair Overlays for Male and Female — BH extra variants** provider support.
@@ -138,7 +149,6 @@ When reporting an issue, include the full log plus exact Skyrim, SKSE and RaceMe
 - Added male and female full-body mappings.
 - Added male and female Arm Hair and Leg Hair mappings for the BH pack.
 - Added automatic FOMOD recommendation when `BH_Body.esp` is active.
-- Preserved unified Skyrim 1.5.97 legacy and modern SKEE v2+ support from v0.9.0.
 
 ## Recommended Nexus metadata
 
@@ -154,31 +164,29 @@ Suggested tags:
 - Hair
 - SKSE
 
-**Version:** 0.10.0
+**Version:** 0.10.1
 
 **Main file name:**
 
-`BodyHairSliders-v0.10.0-FOMOD.zip`
+`BodyHairSliders-v0.10.1-FOMOD.zip`
 
 **Main file label:**
 
-`Body Hair Sliders v0.10.0 - Universal FOMOD`
+`Body Hair Sliders v0.10.1 - Universal FOMOD`
 
 **Main file description:**
 
-Unified installer for Skyrim SE 1.5.97 and modern Skyrim. Adds Body Hair Overlays for Male and Female support with Full Body, Arm and Leg Hair options. Automatically selects the compatible RaceMenu/SKEE backend at runtime.
+Unified installer with automatic SKEE backend selection. Includes Body Hair Overlays for Male and Female support and improved Body Hair Color performance on legacy NiOverride configurations.
 
 ## Publication checklist
 
-- [ ] Build from `dev/unified-runtime-support` with `VERSION = 0.10.0`.
+- [ ] Build from `dev/unified-runtime-support` with `VERSION = 0.10.1`.
 - [ ] Run `build_release.bat`.
-- [ ] Verify `dist/BodyHairSliders-v0.10.0-FOMOD.zip` installs cleanly.
+- [ ] Verify `dist/BodyHairSliders-v0.10.1-FOMOD.zip` installs cleanly.
 - [ ] Confirm FOMOD detects/recommends **Body Hair Overlays for Male and Female** when `BH_Body.esp` is active.
 - [ ] Test Female Full Body / Arms / Legs.
 - [ ] Test Male Full Body / Arms / Legs.
-- [ ] Confirm `None / Shaved` clears the BH styles correctly.
-- [ ] Confirm Body Hair Color recolors the BH styles.
-- [ ] Confirm log reports `v0.10.0` and the detected Skyrim runtime.
-- [ ] Re-test on Skyrim 1.6.1170.
-- [ ] Have a 1.5.97 tester confirm normal behavior with the same archive.
-- [ ] Validate 1.6.640 separately before adding it to the officially supported runtime list.
+- [ ] Confirm `None / Shaved` clears styles correctly.
+- [ ] Test rapid `Body Hair Color` changes on a legacy SKEE v1 setup and verify reduced lag.
+- [ ] Confirm modern SKEE v2+ behavior is unchanged.
+- [ ] Confirm log reports `v0.10.1` and the selected backend.
