@@ -8,8 +8,13 @@ namespace BHS
         return singleton;
     }
 
-    bool RaceMenuIntegration::Initialize()
+    bool RaceMenuIntegration::EnsureInitialized()
     {
+        if (initialized_) {
+            return backend_ != Backend::Unavailable;
+        }
+
+        initialized_ = true;
         backend_ = Backend::Unavailable;
         overlay_ = nullptr;
         override_ = nullptr;
@@ -26,6 +31,8 @@ namespace BHS
             SKSE::log::error("SKSE messaging interface unavailable");
             return false;
         }
+
+        SKSE::log::info("Initializing RaceMenu/SKEE integration on demand");
 
         SKEE::InterfaceExchangeMessage exchange{};
         messaging->Dispatch(
