@@ -6,7 +6,7 @@ The mod does **not** redistribute body-hair textures or meshes. Supported body-h
 
 ## Current version
 
-**v0.10.1 — unified runtime support + optimized legacy recoloring**
+**v0.10.2 — unified runtime support + safer modern SKEE overlay updates**
 
 One archive and one DLL support both the legacy RaceMenu/SKEE v1 path and the modern SKEE v2+ path.
 
@@ -16,7 +16,7 @@ Validated / intended targets:
 
 - **Skyrim SE 1.5.97** — legacy RaceMenu/SKEE v1 backend through RaceMenu `NiOverride` Papyrus natives.
 - **Skyrim SE/AE 1.6.1170** — modern RaceMenu/SKEE v2+ C++ backend.
-- **Skyrim 1.6.640** — dedicated compatibility testing has shown RaceMenu 0.4.19.14 may expose `Overlay v1 / Override v1`; the unified backend architecture is designed to route that ABI safely through the same legacy NiOverride path.
+- **Skyrim 1.6.640** — dedicated compatibility testing has shown RaceMenu 0.4.19.14 may expose `Overlay v1 / Override v1`; the unified backend architecture routes that ABI safely through the same legacy NiOverride path.
 
 BodyHairSliders queries RaceMenu/SKEE at runtime and selects the safe backend from the interface ABI:
 
@@ -51,7 +51,7 @@ Existing supported overlays already present on the player are detected and refle
 
 ## Supported providers
 
-The v0.10.1 FOMOD supports:
+The v0.10.2 FOMOD supports:
 
 - Nordic Warmaiden Body Hair
 - HIMBO V3 Bodyhair Overlays for Racemenu
@@ -105,8 +105,6 @@ For v1/v1, the RaceMenu frontend uses RaceMenu's `NiOverride` Papyrus natives fo
 
 The legacy recoloring path was optimized in v0.10.1. Active BodyHairSliders regions are cached when RaceMenu builds the sliders and whenever a body-hair slider changes. Changing `Body Hair Color` therefore updates only active cached overlays instead of rescanning every Body/Hands/Feet slot for every region, and performs a single `NiOverride.ApplyNodeOverrides()` refresh after the batch.
 
-This improves responsiveness particularly on SKEE v1 configurations while leaving the modern C++ backend unchanged.
-
 Expected log lines include:
 
 ```text
@@ -118,11 +116,18 @@ Selected SKEE backend: legacy-papyrus (...)
 
 For `Overlay >= 2` and `Override >= 2`, BodyHairSliders uses the native C++ backend.
 
-Expected log lines include:
+v0.10.2 changes the modern refresh path after crash reports and reports of cumulative RaceMenu face distortion. Previous builds used broad actor refresh operations after each slider change, including `SetNodeProperties()`, `AddNodeOverrideUpdate()` and `ActorUpdateManager::Flush()`. Those operations can rebuild unrelated RaceMenu node state and flush updates queued by other plugins.
+
+v0.10.2 now writes the persistent BodyHairSliders node overrides and applies only the exact Body/Hands/Feet overlay node through RaceMenu's targeted `SetNodeProperty()` interface. It no longer performs a global node-override rebuild or global ActorUpdateManager flush for normal BodyHairSliders slider changes.
+
+`None / Shaved` likewise removes the saved BodyHairSliders overrides and hides only the affected overlay node, rather than rebuilding every node override on the actor.
+
+Expected modern log lines include:
 
 ```text
 SKEE interface versions: Overlay=2 Override=2 ActorUpdate=2
 Selected SKEE backend: modern (...)
+Applied provider=... refresh=targeted
 ```
 
 ## Requirements
@@ -137,7 +142,7 @@ Selected SKEE backend: modern (...)
 
 1. Install SKSE64, Address Library and RaceMenu versions matching your Skyrim runtime.
 2. Install one or more supported body-hair provider mods.
-3. Install `BodyHairSliders-v0.10.1-FOMOD.zip` with Vortex or another FOMOD-capable mod manager.
+3. Install `BodyHairSliders-v0.10.2-FOMOD.zip` with Vortex or another FOMOD-capable mod manager.
 4. Select the provider packs actually installed in your setup.
 5. Optionally install the extended RaceMenu Body/Hands/Feet overlay-slot configuration if needed.
 6. Enable `BodyHairSliders.esp`.
@@ -154,6 +159,8 @@ Documents/My Games/Skyrim Special Edition/SKSE/BodyHairSliders.log
 
 The first lines identify the exact BodyHairSliders build and detected Skyrim runtime. The log also reports provider detection, style counts, SKEE interface versions and the selected backend.
 
+When testing v0.10.2 on modern SKEE, check that applied style log entries end with `refresh=targeted` and report the full BodyHairSliders log if a crash, face deformation, missing overlay update or color issue remains.
+
 ## Build
 
 ```bat
@@ -165,10 +172,21 @@ The version is read from the root `VERSION` file. The build verifies the DLL, bo
 Expected archive:
 
 ```text
-dist/BodyHairSliders-v0.10.1-FOMOD.zip
+dist/BodyHairSliders-v0.10.2-FOMOD.zip
 ```
 
 `compiler_stubs/NiOverride.psc` is compile-time only and is **not** packaged as a RaceMenu replacement.
+
+## v0.10.2
+
+- Reworked the modern SKEE v2+ overlay refresh path after crash reports involving SKEE overlay installation/update tasks.
+- Removed global `SetNodeProperties()` calls from normal modern BodyHairSliders style application.
+- Removed `ActorUpdateManager::AddNodeOverrideUpdate()` and `Flush()` from normal modern slider changes.
+- Stopped calling `AddOverlays()` on every style change.
+- Uses targeted `SetNodeProperty()` calls for only the BodyHairSliders-owned Body/Hands/Feet overlay node.
+- `None / Shaved` now hides the affected modern overlay node without globally rebuilding actor node overrides.
+- Prevents BodyHairSliders from flushing unrelated RaceMenu/SKEE work queued by other mods or actors.
+- Adds `refresh=targeted` diagnostics to modern apply/clear log entries.
 
 ## v0.10.1
 
@@ -176,7 +194,6 @@ dist/BodyHairSliders-v0.10.1-FOMOD.zip
 - Caches active legacy body-hair selections instead of rescanning every overlay location on each color change.
 - Recolors only active BodyHairSliders regions.
 - Batches legacy recoloring into a single `NiOverride.ApplyNodeOverrides()` refresh.
-- Preserves the modern SKEE v2+ C++ backend unchanged.
 
 ## v0.10.0
 
