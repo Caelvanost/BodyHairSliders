@@ -24,23 +24,6 @@ namespace
         spdlog::flush_on(spdlog::level::info);
     }
 
-    void LogOverlayCapacity()
-    {
-        auto* overlay = BHS::RaceMenuIntegration::GetSingleton().Overlay();
-        if (!overlay) {
-            return;
-        }
-
-        using Type = BHS::SKEE::IOverlayInterface::OverlayType;
-        using Location = BHS::SKEE::IOverlayInterface::OverlayLocation;
-        SKSE::log::info(
-            "RaceMenu normal overlay capacity: body={} hands={} feet={} face={}",
-            overlay->GetOverlayCount(Type::Normal, Location::Body),
-            overlay->GetOverlayCount(Type::Normal, Location::Hand),
-            overlay->GetOverlayCount(Type::Normal, Location::Feet),
-            overlay->GetOverlayCount(Type::Normal, Location::Face));
-    }
-
     void RunProofOfConcept()
     {
         auto& settings = BHS::Settings::GetSingleton();
@@ -53,7 +36,9 @@ namespace
             SKSE::log::error("PoC: player unavailable");
             return;
         }
-        if (!BHS::RaceMenuIntegration::GetSingleton().IsModern()) {
+
+        auto& integration = BHS::RaceMenuIntegration::GetSingleton();
+        if (!integration.EnsureInitialized() || !integration.IsModern()) {
             SKSE::log::warn("PoC skipped because the modern SKEE backend is not active");
             return;
         }
@@ -85,16 +70,12 @@ namespace
         switch (message->type) {
         case SKSE::MessagingInterface::kDataLoaded:
             BHS::Settings::GetSingleton().Load();
-            if (BHS::RaceMenuIntegration::GetSingleton().Initialize()) {
-                LogOverlayCapacity();
-                SKSE::log::info("BodyHairSliders data-loaded initialization complete");
-            } else {
-                SKSE::log::error("BodyHairSliders RaceMenu integration unavailable; sliders will not apply overlays");
-            }
+            SKSE::log::info("BodyHairSliders data-loaded initialization complete; SKEE initialization deferred until RaceMenu use");
             break;
         case SKSE::MessagingInterface::kPostLoadGame:
+            // Do not touch SKEE during normal save loading. The interface exchange is
+            // performed lazily when RaceMenu requests the BodyHairSliders controls.
             RunProofOfConcept();
-            BHS::PapyrusAPI::ReapplyPlayerSelections();
             break;
         default:
             break;
