@@ -21,10 +21,11 @@ namespace BHS
         bool EnsureInitialized();
         bool IsInitialized() const noexcept { return initialized_; }
 
-        // The C++ overlay renderer may only use the modern wrapper ABI.
-        bool IsAvailable() const noexcept { return initialized_ && backend_ == Backend::Modern; }
-        bool IsModern() const noexcept { return initialized_ && backend_ == Backend::Modern; }
-        bool IsLegacy() const noexcept { return initialized_ && backend_ == Backend::LegacyPapyrus; }
+        // Backend queries are intentionally lazy. The first RaceMenu/Papyrus use
+        // performs the interface exchange; normal save loading does not touch SKEE.
+        bool IsAvailable() { return EnsureInitialized() && backend_ == Backend::Modern; }
+        bool IsModern() { return EnsureInitialized() && backend_ == Backend::Modern; }
+        bool IsLegacy() { return EnsureInitialized() && backend_ == Backend::LegacyPapyrus; }
         Backend GetBackend() const noexcept { return backend_; }
 
         SKEE::IOverlayInterface* Overlay() const noexcept { return overlay_; }
