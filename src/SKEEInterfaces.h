@@ -95,6 +95,8 @@ namespace BHS::SKEE
         virtual bool GetNodeOverride(RE::TESObjectREFR*, bool, const char*, u16, u8, GetVariant&) = 0;
         virtual void RemoveNodeOverride(RE::TESObjectREFR*, bool, const char*, u16, u8) = 0;
         virtual void SetNodeProperties(RE::TESObjectREFR*, bool immediate) = 0;
+        virtual void SetNodeProperty(RE::TESObjectREFR*, bool firstPerson, const char*, u16, u8, SetVariant&, bool immediate) = 0;
+        virtual bool GetNodeProperty(RE::TESObjectREFR*, bool firstPerson, const char*, u16, u8, GetVariant&) = 0;
     };
 
     class IActorUpdateManager : public IPluginInterface
