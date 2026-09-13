@@ -2,35 +2,37 @@
 
 BodyHairSliders is a Skyrim SE/AE SKSE plugin that exposes compatible third-party body-hair overlays through a unified RaceMenu frontend.
 
-The mod does **not** redistribute body-hair textures or meshes. Supported body-hair mods remain external asset providers.
+The mod does **not** redistribute provider textures or meshes. Supported body-hair mods remain external dependencies.
 
 ## Current version
 
-**v0.10.2 — unified runtime support + safer modern SKEE overlay updates**
+**v0.10.4 — lazy SKEE initialization + targeted modern overlay updates**
 
 One archive and one DLL support both the legacy RaceMenu/SKEE v1 path and the modern SKEE v2+ path.
 
-### Runtime compatibility
+## Runtime compatibility
 
 Validated / intended targets:
 
-- **Skyrim SE 1.5.97** — legacy RaceMenu/SKEE v1 backend through RaceMenu `NiOverride` Papyrus natives.
+- **Skyrim SE 1.5.97** — legacy RaceMenu/SKEE v1 through RaceMenu `NiOverride` Papyrus natives.
+- **Skyrim 1.6.640** — RaceMenu 0.4.19.14 may expose SKEE Overlay/Override v1 and is routed through the same safe legacy backend.
 - **Skyrim SE/AE 1.6.1170** — modern RaceMenu/SKEE v2+ C++ backend.
-- **Skyrim 1.6.640** — dedicated compatibility testing has shown RaceMenu 0.4.19.14 may expose `Overlay v1 / Override v1`; the unified backend architecture routes that ABI safely through the same legacy NiOverride path.
 
-BodyHairSliders queries RaceMenu/SKEE at runtime and selects the safe backend from the interface ABI:
+Backend selection:
 
 ```text
-SKEE Overlay v1 + Override v1
-  -> legacy-papyrus backend
+Overlay v1 + Override v1
+  -> legacy-papyrus
 
-SKEE Overlay v2+ + Override v2+
-  -> modern C++ backend
+Overlay v2+ + Override v2+
+  -> modern
 ```
+
+Since v0.10.3, BodyHairSliders does **not** exchange SKEE interfaces during normal save loading. SKEE initialization is deferred until RaceMenu actually requests BodyHairSliders controls. This avoids the save-load CTD observed on modern SKEE while RaceMenu was processing unrelated overlay installation tasks.
 
 ## RaceMenu controls
 
-BodyHairSliders integrates directly into RaceMenu's native **Hair** category and dynamically exposes only regions for which compatible styles are detected:
+Depending on installed providers, BodyHairSliders exposes the following controls in RaceMenu's native **Hair** category:
 
 - Full Body Hair
 - Pubic Hair
@@ -45,13 +47,11 @@ BodyHairSliders integrates directly into RaceMenu's native **Hair** category and
 - Butt Hair
 - Body Hair Color
 
-Each region uses `0 = None / Shaved`, followed by the detected styles. `Body Hair Color` provides `Match Hair` plus built-in color presets.
+Each region uses `0 = None / Shaved`, followed by the detected styles. Existing supported overlays are detected when RaceMenu opens and reflected by the sliders.
 
-Existing supported overlays already present on the player are detected and reflected by the corresponding sliders when RaceMenu opens.
+`Body Hair Color` provides `Match Hair` plus built-in presets.
 
 ## Supported providers
-
-The v0.10.2 FOMOD supports:
 
 - Nordic Warmaiden Body Hair
 - HIMBO V3 Bodyhair Overlays for Racemenu
@@ -59,11 +59,9 @@ The v0.10.2 FOMOD supports:
 - Pubes Forever for Males
 - OPubes NG compatibility
 - More Pubes for SlaveTats
-- Natural Pubic Hairstyles — standard 2K/4K variants
-- Natural Pubic Hairstyles - UBE — UBE 2K/4K variants
-- **Body Hair Overlays for Male and Female — BH extra variants**
-
-Select only the providers actually installed in the current Skyrim setup.
+- Natural Pubic Hairstyles — standard variants
+- Natural Pubic Hairstyles - UBE
+- Body Hair Overlays for Male and Female — BH extra variants
 
 Provider definitions are installed under:
 
@@ -71,95 +69,112 @@ Provider definitions are installed under:
 SKSE/Plugins/BodyHairSliders/providers/*.json
 ```
 
-## Body Hair Overlays for Male and Female
+### Body Hair Overlays for Male and Female
 
-v0.10.0 added support for the **BH extra variants** archive.
-
-The original provider contains:
-
-```text
-BH_Body.esp
-Data/textures/actors/character/Overlays/Body Hair Overlays/BH_F.dds
-Data/textures/actors/character/Overlays/Body Hair Overlays/BH_F_Arms.dds
-Data/textures/actors/character/Overlays/Body Hair Overlays/BH_F_Legs.dds
-Data/textures/actors/character/Overlays/Body Hair Overlays/BH_M.dds
-Data/textures/actors/character/Overlays/Body Hair Overlays/BH_M_Arms.dds
-Data/textures/actors/character/Overlays/Body Hair Overlays/BH_M_Legs.dds
-```
-
-BodyHairSliders maps these as:
+The BH extra variants provider is mapped as follows:
 
 - `BH_F.dds` / `BH_M.dds` -> **Full Body Hair**
 - `BH_F_Arms.dds` / `BH_M_Arms.dds` -> **Arm Hair**
 - `BH_F_Legs.dds` / `BH_M_Legs.dds` -> **Leg Hair**
 
-Male and female styles are exposed independently. The original provider mod must remain installed; BodyHairSliders only references its DDS files.
+The original provider mod must remain installed.
 
-## Backend details
+## Modern SKEE v2+ backend
 
-### Legacy SKEE v1
-
-The original SKEE v1 `Overlay` and `Override` interfaces are not ABI-compatible with the modern wrapper API. BodyHairSliders queries only the stable base `IPluginInterface` first, reads `GetVersion()`, and never casts v1 objects to the modern wrappers.
-
-For v1/v1, the RaceMenu frontend uses RaceMenu's `NiOverride` Papyrus natives for overlay counts, current texture detection, slot reuse, texture/tint/alpha application, clearing and recoloring.
-
-The legacy recoloring path was optimized in v0.10.1. Active BodyHairSliders regions are cached when RaceMenu builds the sliders and whenever a body-hair slider changes. Changing `Body Hair Color` therefore updates only active cached overlays instead of rescanning every Body/Hands/Feet slot for every region, and performs a single `NiOverride.ApplyNodeOverrides()` refresh after the batch.
-
-Expected log lines include:
+v0.10.4 completes the local SKEE v2 `IOverrideInterface` wrapper with RaceMenu's official targeted node-property methods:
 
 ```text
-SKEE interface versions: Overlay=1 Override=1 ActorUpdate=...
-Selected SKEE backend: legacy-papyrus (...)
+SetNodeProperty(...)
+GetNodeProperty(...)
 ```
 
-### Modern SKEE v2+
-
-For `Overlay >= 2` and `Override >= 2`, BodyHairSliders uses the native C++ backend.
-
-v0.10.2 changes the modern refresh path after crash reports and reports of cumulative RaceMenu face distortion. Previous builds used broad actor refresh operations after each slider change, including `SetNodeProperties()`, `AddNodeOverrideUpdate()` and `ActorUpdateManager::Flush()`. Those operations can rebuild unrelated RaceMenu node state and flush updates queued by other plugins.
-
-v0.10.2 now writes the persistent BodyHairSliders node overrides and applies only the exact Body/Hands/Feet overlay node through RaceMenu's targeted `SetNodeProperty()` interface. It no longer performs a global node-override rebuild or global ActorUpdateManager flush for normal BodyHairSliders slider changes.
-
-`None / Shaved` likewise removes the saved BodyHairSliders overrides and hides only the affected overlay node, rather than rebuilding every node override on the actor.
-
-Expected modern log lines include:
+Normal BodyHairSliders changes now use this sequence:
 
 ```text
-SKEE interface versions: Overlay=2 Override=2 ActorUpdate=2
-Selected SKEE backend: modern (...)
-Applied provider=... refresh=targeted
+persist BodyHairSliders node overrides
+-> update only the affected live Body/Hands/Feet overlay node
+-> no global SetNodeProperties()
+-> no AddNodeOverrideUpdate()
+-> no ActorUpdateManager::Flush()
 ```
+
+Texture, tint and alpha are applied directly to the exact overlay geometry owned by the selected BodyHairSliders region. `None / Shaved` likewise hides only the affected live overlay node after removing its persistent overrides.
+
+Expected modern apply log entries end with:
+
+```text
+refresh=targeted-node
+```
+
+This is intended to fix modern-backend cases where:
+
+- a newly selected Full Body Hair texture was stored but not visibly updated;
+- Body Hair Color values were stored for all active regions but only some overlays visibly recolored;
+- broad RaceMenu node refreshes caused cumulative face distortion or interacted badly with unrelated SKEE overlay work.
+
+## Legacy SKEE v1 backend
+
+Legacy SKEE v1 is never cast to the modern wrapper ABI. BodyHairSliders uses RaceMenu's stable `NiOverride` Papyrus natives for overlay detection and application.
+
+The legacy recoloring path caches active BodyHairSliders regions and batches recoloring into a single `NiOverride.ApplyNodeOverrides()` refresh.
+
+## Extended overlay slots
+
+BodyHairSliders optionally provides:
+
+```ini
+[Overlays/Body]
+iNumOverlays=20
+
+[Overlays/Hands]
+iNumOverlays=10
+
+[Overlays/Feet]
+iNumOverlays=10
+```
+
+This is useful when the normal RaceMenu overlay slots are already occupied by other overlays. A tested modern setup required the extended counts because the default `6 / 3 / 3` slots were already full.
 
 ## Requirements
 
 - Skyrim Special Edition / Anniversary Edition on a supported runtime
-- SKSE64 matching the installed game version
-- Address Library for SKSE Plugins matching the runtime
-- RaceMenu / SKEE matching the runtime
-- one or more supported body-hair provider mods selected in the FOMOD
+- matching SKSE64
+- Address Library matching the runtime
+- RaceMenu matching the runtime
+- one or more supported body-hair provider mods
 
 ## Installation
 
-1. Install SKSE64, Address Library and RaceMenu versions matching your Skyrim runtime.
-2. Install one or more supported body-hair provider mods.
-3. Install `BodyHairSliders-v0.10.2-FOMOD.zip` with Vortex or another FOMOD-capable mod manager.
-4. Select the provider packs actually installed in your setup.
-5. Optionally install the extended RaceMenu Body/Hands/Feet overlay-slot configuration if needed.
+1. Install SKSE64, Address Library and RaceMenu for the current Skyrim runtime.
+2. Install one or more supported body-hair providers.
+3. Install `BodyHairSliders-v0.10.4-FOMOD.zip`.
+4. Select only the providers actually installed.
+5. Enable Extended Overlay Slots if the normal RaceMenu slots are already occupied.
 6. Enable `BodyHairSliders.esp`.
-7. Launch Skyrim and open RaceMenu (`showracemenu`).
-8. Open the native **Hair** category.
+7. Launch Skyrim and load the save normally.
+8. Open RaceMenu with `showracemenu` and use the **Hair** category.
 
 ## Diagnostics
 
-Runtime diagnostics are written to:
+Log path:
 
 ```text
 Documents/My Games/Skyrim Special Edition/SKSE/BodyHairSliders.log
 ```
 
-The first lines identify the exact BodyHairSliders build and detected Skyrim runtime. The log also reports provider detection, style counts, SKEE interface versions and the selected backend.
+On modern SKEE, initialization should not occur during save loading. The first RaceMenu use should produce lines similar to:
 
-When testing v0.10.2 on modern SKEE, check that applied style log entries end with `refresh=targeted` and report the full BodyHairSliders log if a crash, face deformation, missing overlay update or color issue remains.
+```text
+Initializing RaceMenu/SKEE integration on demand
+SKEE interface versions: Overlay=2 Override=2 ActorUpdate=2
+Selected SKEE backend: modern (...)
+```
+
+Modern style updates should then report:
+
+```text
+refresh=targeted-node
+```
 
 ## Build
 
@@ -167,65 +182,41 @@ When testing v0.10.2 on modern SKEE, check that applied style log entries end wi
 build_release.bat
 ```
 
-The version is read from the root `VERSION` file. The build verifies the DLL, both Papyrus `.pex` files, all selected provider definitions and the final FOMOD archive.
-
 Expected archive:
 
 ```text
-dist/BodyHairSliders-v0.10.2-FOMOD.zip
+dist/BodyHairSliders-v0.10.4-FOMOD.zip
 ```
 
-`compiler_stubs/NiOverride.psc` is compile-time only and is **not** packaged as a RaceMenu replacement.
+`compiler_stubs/NiOverride.psc` is compile-time only and is not packaged as a RaceMenu replacement.
 
-## v0.10.2
+## Changelog
 
-- Reworked the modern SKEE v2+ overlay refresh path after crash reports involving SKEE overlay installation/update tasks.
-- Removed global `SetNodeProperties()` calls from normal modern BodyHairSliders style application.
-- Removed `ActorUpdateManager::AddNodeOverrideUpdate()` and `Flush()` from normal modern slider changes.
-- Stopped calling `AddOverlays()` on every style change.
-- Uses targeted `SetNodeProperty()` calls for only the BodyHairSliders-owned Body/Hands/Feet overlay node.
-- `None / Shaved` now hides the affected modern overlay node without globally rebuilding actor node overrides.
-- Prevents BodyHairSliders from flushing unrelated RaceMenu/SKEE work queued by other mods or actors.
-- Adds `refresh=targeted` diagnostics to modern apply/clear log entries.
+### v0.10.4
 
-## v0.10.1
+- Completed the modern SKEE v2 node-property wrapper using the official RaceMenu interface layout.
+- Added targeted `SetNodeProperty()` live updates for overlay texture, tint and alpha.
+- Removed global `SetNodeProperties()` from normal modern style/color changes.
+- Added targeted live clearing for `None / Shaved`.
+- Targets the Full Body Hair live-update issue and modern Body Hair Color updates that were only visibly affecting some overlays.
+- Keeps ActorUpdateManager global refresh/flush operations disabled.
 
-- Optimized `Body Hair Color` updates on the legacy `NiOverride` backend.
-- Caches active legacy body-hair selections instead of rescanning every overlay location on each color change.
-- Recolors only active BodyHairSliders regions.
-- Batches legacy recoloring into a single `NiOverride.ApplyNodeOverrides()` refresh.
+### v0.10.3
 
-## v0.10.0
+- Deferred RaceMenu/SKEE interface exchange until BodyHairSliders is actually used in RaceMenu.
+- Removed normal post-load SKEE interaction.
+- Fixed the reproducible save-load CTD triggered by early SKEE initialization on the tested Skyrim 1.6.1170 setup.
 
-- Added **Body Hair Overlays for Male and Female — BH extra variants** provider support.
-- Added a new native RaceMenu **Full Body Hair** slider.
-- Added male and female full-body overlay mappings.
-- Added male and female Arm Hair and Leg Hair mappings for the BH pack.
-- Added automatic FOMOD recommendation when `BH_Body.esp` is active.
-- Preserved the unified SKEE v1 legacy and SKEE v2+ modern runtime architecture introduced in v0.9.0.
+### v0.10.2
 
-## Existing provider notes
+- Removed `AddNodeOverrideUpdate()` and `ActorUpdateManager::Flush()` from normal modern BodyHairSliders operations.
+- Stopped calling `AddOverlays()` on every slider movement.
 
-### HIMBO
+### v0.10.1
 
-HIMBO exposes arms, hands, armpits, butt, back, stomach/belly, chest, legs and feet. Hands render through Hand overlay slots and feet through Feet overlay slots while controls remain under Hair.
+- Optimized legacy Body Hair Color updates by caching active regions and batching the final NiOverride refresh.
 
-### More Pubes for SlaveTats
+### v0.10.0
 
-BodyHairSliders reads the original provider DDS files directly. SlaveTats itself is not required, but the original texture pack must remain installed.
-
-### Natural Pubic Hairstyles
-
-Standard variants use:
-
-```text
-Data/Textures/Actors/Character/PubicHairStyles/
-```
-
-UBE variants use:
-
-```text
-Data/Textures/Actors/Character/UBE_PubicHairStyles/
-```
-
-The standard and UBE providers remain separate FOMOD choices.
+- Added Body Hair Overlays for Male and Female support.
+- Added Full Body Hair.
