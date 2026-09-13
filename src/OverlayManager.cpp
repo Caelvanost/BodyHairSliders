@@ -6,6 +6,7 @@ namespace BHS
     namespace
     {
         constexpr SKEE::u8 kUnindexedProperty = 0xFF;
+        constexpr std::string_view kDefaultOverlayTexture = "textures\\actors\\character\\overlays\\default.dds";
 
         class StringVariant final : public SKEE::IOverrideInterface::SetVariant
         {
@@ -187,6 +188,32 @@ namespace BHS
             overrideInterface->RemoveNodeOverride(actor, isFemale, nodeName.c_str(), SKEE::kShaderTintColor, kUnindexedProperty);
             overrideInterface->RemoveNodeOverride(actor, isFemale, nodeName.c_str(), SKEE::kShaderAlpha, kUnindexedProperty);
         }
+
+        void ApplyNodePropertiesTargeted(
+            SKEE::IOverrideInterface* overrideInterface,
+            RE::Actor* actor,
+            const std::string& nodeName,
+            StringVariant& textureValue,
+            IntVariant& tintValue,
+            FloatVariant& alphaValue)
+        {
+            // Update only the live third-person overlay node owned by BodyHairSliders.
+            // Do not rebuild all actor node overrides and do not flush ActorUpdateManager.
+            overrideInterface->SetNodeProperty(actor, false, nodeName.c_str(), SKEE::kShaderTexture, 0, textureValue, true);
+            overrideInterface->SetNodeProperty(actor, false, nodeName.c_str(), SKEE::kShaderTintColor, kUnindexedProperty, tintValue, true);
+            overrideInterface->SetNodeProperty(actor, false, nodeName.c_str(), SKEE::kShaderAlpha, kUnindexedProperty, alphaValue, true);
+        }
+
+        void HideNodeTargeted(
+            SKEE::IOverrideInterface* overrideInterface,
+            RE::Actor* actor,
+            const std::string& nodeName)
+        {
+            StringVariant emptyTexture{ std::string(kDefaultOverlayTexture) };
+            FloatVariant hiddenAlpha{ 0.0F };
+            overrideInterface->SetNodeProperty(actor, false, nodeName.c_str(), SKEE::kShaderTexture, 0, emptyTexture, true);
+            overrideInterface->SetNodeProperty(actor, false, nodeName.c_str(), SKEE::kShaderAlpha, kUnindexedProperty, hiddenAlpha, true);
+        }
     }
 
     OverlayManager& OverlayManager::GetSingleton()
@@ -250,16 +277,13 @@ namespace BHS
             for (const auto duplicate : staleDuplicates) {
                 const auto duplicateNode = MakeNodeName(format, duplicate);
                 RemoveNodeProperties(overrideInterface, actor, isFemale, duplicateNode);
+                HideNodeTargeted(overrideInterface, actor, duplicateNode);
                 SKSE::log::info(
                     "Removed stale duplicate BodyHairSliders {} overlay slot {} ({}) for region '{}'",
                     location,
                     duplicate,
                     duplicateNode,
                     region);
-            }
-
-            if (!staleDuplicates.empty()) {
-                overrideInterface->SetNodeProperties(actor, true);
             }
 
             actorSlots.emplace(std::string(region), ReservedSlot{ *reclaimedSlot, std::string(location) });
@@ -323,16 +347,15 @@ namespace BHS
         IntVariant tintValue(static_cast<SKEE::i32>(PackRGB(color)));
         FloatVariant alphaValue(std::clamp(color.a, 0.0F, 1.0F));
 
+        // Persist the selection so RaceMenu can restore it later.
         overrideInterface->AddNodeOverride(actor, isFemale, nodeName.c_str(), SKEE::kShaderTexture, 0, textureValue);
         overrideInterface->AddNodeOverride(actor, isFemale, nodeName.c_str(), SKEE::kShaderTintColor, kUnindexedProperty, tintValue);
         overrideInterface->AddNodeOverride(actor, isFemale, nodeName.c_str(), SKEE::kShaderAlpha, kUnindexedProperty, alphaValue);
 
-        // Apply the persisted override values immediately, but deliberately avoid
-        // ActorUpdateManager::AddNodeOverrideUpdate()/Flush(). Those global queue
-        // operations can process unrelated SKEE work for other nodes/actors.
-        overrideInterface->SetNodeProperties(actor, true);
+        // Apply texture/tint/alpha directly to this live overlay geometry only.
+        ApplyNodePropertiesTargeted(overrideInterface, actor, nodeName, textureValue, tintValue, alphaValue);
 
-        SKSE::log::info("Applied provider={} region={} location={} style={} node={} texture={} rgb=#{:06X} alpha={:.2f} refresh=node-properties-only",
+        SKSE::log::info("Applied provider={} region={} location={} style={} node={} texture={} rgb=#{:06X} alpha={:.2f} refresh=targeted-node",
             style->provider, style->region, style->location, style->id, nodeName, texture, PackRGB(color), color.a);
         return true;
     }
@@ -364,6 +387,7 @@ namespace BHS
                 for (bool female : { false, true }) {
                     RemoveNodeProperties(overrideInterface, actor, female, nodeName);
                 }
+                HideNodeTargeted(overrideInterface, actor, nodeName);
                 actorIt->second.erase(slotIt);
                 removed = true;
             }
@@ -382,6 +406,7 @@ namespace BHS
 
             for (std::uint32_t i = 0; i < count; ++i) {
                 const auto nodeName = MakeNodeName(format, i);
+                bool clearedThisNode = false;
                 for (bool female : { false, true }) {
                     if (!overrideInterface->HasNodeOverride(actor, female, nodeName.c_str(), SKEE::kShaderTexture, 0)) {
                         continue;
@@ -389,6 +414,7 @@ namespace BHS
                     const auto texture = ReadNodeTexture(overrideInterface, actor, female, nodeName);
                     if (texture && IsKnownRegionTexture(*texture, region, location, female)) {
                         RemoveNodeProperties(overrideInterface, actor, female, nodeName);
+                        clearedThisNode = true;
                         removed = true;
                         SKSE::log::info(
                             "Cleared stale BodyHairSliders {} overlay slot {} ({}) for region '{}'",
@@ -398,12 +424,14 @@ namespace BHS
                             region);
                     }
                 }
+                if (clearedThisNode) {
+                    HideNodeTargeted(overrideInterface, actor, nodeName);
+                }
             }
         }
 
         if (removed) {
-            overrideInterface->SetNodeProperties(actor, true);
-            SKSE::log::info("Cleared BodyHairSliders region='{}' refresh=node-properties-only", region);
+            SKSE::log::info("Cleared BodyHairSliders region='{}' refresh=targeted-node", region);
         }
         return removed;
     }
@@ -414,9 +442,8 @@ namespace BHS
             return;
         }
 
-        // Do not flush ActorUpdateManager from BodyHairSliders. Apply/Clear already
-        // commit their node overrides through SetNodeProperties(). This avoids
-        // forcing unrelated queued overlay/node work for other actors.
+        // Apply/Clear already update their exact live overlay nodes. Never flush the
+        // global ActorUpdateManager queue from BodyHairSliders.
         SKSE::log::debug("Skipped global ActorUpdateManager refresh for actor {:08X}", actor->GetFormID());
     }
 }
