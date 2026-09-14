@@ -49,12 +49,12 @@ namespace BHS::PapyrusAPI
             return path;
         }
 
-        std::uint32_t PackRGB(const RGBA& color)
+        std::uint32_t PackARGB(const RGBA& color)
         {
             const auto byte = [](float value) {
                 return static_cast<std::uint32_t>(std::clamp(value, 0.0F, 1.0F) * 255.0F + 0.5F);
             };
-            return (byte(color.r) << 16) | (byte(color.g) << 8) | byte(color.b);
+            return (byte(color.a) << 24) | (byte(color.r) << 16) | (byte(color.g) << 8) | byte(color.b);
         }
 
         RGBA CurrentColor(RE::Actor* actor)
@@ -168,7 +168,7 @@ namespace BHS::PapyrusAPI
         std::int32_t GetCurrentColorRGB(RE::StaticFunctionTag*)
         {
             auto* player = RE::PlayerCharacter::GetSingleton();
-            return player ? static_cast<std::int32_t>(PackRGB(CurrentColor(player))) : 0;
+            return player ? static_cast<std::int32_t>(PackARGB(CurrentColor(player))) : 0;
         }
 
         std::int32_t GetCurrentStyleIndex(RE::StaticFunctionTag*, RE::BSFixedString region, bool female)
