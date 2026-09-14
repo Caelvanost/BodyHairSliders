@@ -131,6 +131,37 @@ Event OnSliderChanged(String callback, Float value)
     EndIf
 EndEvent
 
+Bool Function BHS_IsFullBodyOverlapRegion(String region)
+    Return region == "armpits" || region == "chest" || region == "stomach" || region == "back" || region == "arms" || region == "legs" || region == "butt"
+EndFunction
+
+Function BHS_SetSliderToZero(String region, String callbackName)
+    Int count = BodyHairSliders.GetStyleCount(region, BHS_IsFemale)
+    If count > 0
+        SetSliderParameters(callbackName, 0.0, count as Float, 1.0, 0.0)
+    EndIf
+EndFunction
+
+Function BHS_ClearRegionDirect(String region, String callbackName)
+    If BodyHairSliders.IsLegacySKEE()
+        BHS_SetLegacyCachedStyle(region, 0)
+        BHS_ApplyRegionLegacy(region, 0, BHS_IsFemale, True)
+    Else
+        BodyHairSliders.ApplyStyle(region, 0, BHS_IsFemale)
+    EndIf
+    BHS_SetSliderToZero(region, callbackName)
+EndFunction
+
+Function BHS_ClearFullBodyOverlaps()
+    BHS_ClearRegionDirect("armpits", "BHS_Armpits")
+    BHS_ClearRegionDirect("chest", "BHS_Chest")
+    BHS_ClearRegionDirect("stomach", "BHS_Stomach")
+    BHS_ClearRegionDirect("back", "BHS_Back")
+    BHS_ClearRegionDirect("arms", "BHS_Arms")
+    BHS_ClearRegionDirect("legs", "BHS_Legs")
+    BHS_ClearRegionDirect("butt", "BHS_Butt")
+EndFunction
+
 Function BHS_ApplyRegion(String region, Float value)
     Int requested = value as Int
     Int count = BodyHairSliders.GetStyleCount(region, BHS_IsFemale)
@@ -139,6 +170,18 @@ Function BHS_ApplyRegion(String region, Float value)
         requested = 0
     ElseIf requested > count
         requested = count
+    EndIf
+
+    ; A full-body overlay occupies the same Body paint surface as the regional
+    ; torso/limb overlays. Keeping both active can place the full-body texture
+    ; underneath higher-numbered regional slots where it becomes visually hidden.
+    ; Treat them as mutually exclusive while keeping pubic/hands/feet independent.
+    If requested > 0
+        If region == "fullbody"
+            BHS_ClearFullBodyOverlaps()
+        ElseIf BHS_IsFullBodyOverlapRegion(region)
+            BHS_ClearRegionDirect("fullbody", "BHS_FullBody")
+        EndIf
     EndIf
 
     If BodyHairSliders.IsLegacySKEE()
