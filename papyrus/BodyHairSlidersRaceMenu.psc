@@ -135,10 +135,23 @@ Bool Function BHS_IsFullBodyOverlapRegion(String region)
     Return region == "armpits" || region == "chest" || region == "stomach" || region == "back" || region == "arms" || region == "legs" || region == "butt"
 EndFunction
 
+Function BHS_SetSliderParametersCompat(String callbackName, Float minValue, Float maxValue, Float intervalValue, Float positionValue)
+    ; Some older RaceMenuBase source files used by the local Papyrus compiler do
+    ; not declare SetSliderParameters(), even though the Scaleform menu exposes
+    ; RSM_SetSliderParameters. Invoke the same UI method directly for compatibility.
+    String[] params = new String[5]
+    params[0] = callbackName
+    params[1] = minValue as String
+    params[2] = maxValue as String
+    params[3] = intervalValue as String
+    params[4] = positionValue as String
+    UI.InvokeStringA(_targetMenu, _targetRoot + "RSM_SetSliderParameters", params)
+EndFunction
+
 Function BHS_SetSliderToZero(String region, String callbackName)
     Int count = BodyHairSliders.GetStyleCount(region, BHS_IsFemale)
     If count > 0
-        SetSliderParameters(callbackName, 0.0, count as Float, 1.0, 0.0)
+        BHS_SetSliderParametersCompat(callbackName, 0.0, count as Float, 1.0, 0.0)
     EndIf
 EndFunction
 
