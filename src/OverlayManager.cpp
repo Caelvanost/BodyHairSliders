@@ -107,12 +107,12 @@ namespace BHS
             return path;
         }
 
-        std::uint32_t PackRGB(const RGBA& color)
+        std::uint32_t PackARGB(const RGBA& color)
         {
             const auto byte = [](float value) {
                 return static_cast<std::uint32_t>(std::clamp(value, 0.0F, 1.0F) * 255.0F + 0.5F);
             };
-            return (byte(color.r) << 16) | (byte(color.g) << 8) | byte(color.b);
+            return (byte(color.a) << 24) | (byte(color.r) << 16) | (byte(color.g) << 8) | byte(color.b);
         }
 
         std::string SelectTexture(const OverlayStyle& style, const RGBA& color)
@@ -197,8 +197,9 @@ namespace BHS
             IntVariant& tintValue,
             FloatVariant& alphaValue)
         {
-            // Update only the live third-person overlay node owned by BodyHairSliders.
-            // Do not rebuild all actor node overrides and do not flush ActorUpdateManager.
+            // RaceMenu's own overlay color handler writes a full AARRGGBB value to
+            // shader key 7 and alpha separately to key 8. Mirror that behavior while
+            // updating only this exact live overlay node.
             overrideInterface->SetNodeProperty(actor, false, nodeName.c_str(), SKEE::kShaderTexture, 0, textureValue, true);
             overrideInterface->SetNodeProperty(actor, false, nodeName.c_str(), SKEE::kShaderTintColor, kUnindexedProperty, tintValue, true);
             overrideInterface->SetNodeProperty(actor, false, nodeName.c_str(), SKEE::kShaderAlpha, kUnindexedProperty, alphaValue, true);
@@ -344,7 +345,8 @@ namespace BHS
         }
 
         StringVariant textureValue(texture);
-        IntVariant tintValue(static_cast<SKEE::i32>(PackRGB(color)));
+        const auto argb = PackARGB(color);
+        IntVariant tintValue(static_cast<SKEE::i32>(argb));
         FloatVariant alphaValue(std::clamp(color.a, 0.0F, 1.0F));
 
         // Persist the selection so RaceMenu can restore it later.
@@ -355,8 +357,8 @@ namespace BHS
         // Apply texture/tint/alpha directly to this live overlay geometry only.
         ApplyNodePropertiesTargeted(overrideInterface, actor, nodeName, textureValue, tintValue, alphaValue);
 
-        SKSE::log::info("Applied provider={} region={} location={} style={} node={} texture={} rgb=#{:06X} alpha={:.2f} refresh=targeted-node",
-            style->provider, style->region, style->location, style->id, nodeName, texture, PackRGB(color), color.a);
+        SKSE::log::info("Applied provider={} region={} location={} style={} node={} texture={} argb=#{:08X} alpha={:.2f} refresh=targeted-node",
+            style->provider, style->region, style->location, style->id, nodeName, texture, argb, color.a);
         return true;
     }
 
