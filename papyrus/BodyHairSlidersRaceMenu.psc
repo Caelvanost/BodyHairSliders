@@ -136,16 +136,16 @@ Bool Function BHS_IsFullBodyOverlapRegion(String region)
 EndFunction
 
 Function BHS_SetSliderParametersCompat(String callbackName, Float minValue, Float maxValue, Float intervalValue, Float positionValue)
-    ; Some older RaceMenuBase source files used by the local Papyrus compiler do
-    ; not declare SetSliderParameters(), even though the Scaleform menu exposes
-    ; RSM_SetSliderParameters. Invoke the same UI method directly for compatibility.
+    ; Keep compatibility with older RaceMenuBase source files used by the local
+    ; Papyrus compiler: they may not expose SetSliderParameters(), _targetMenu or
+    ; _targetRoot. The standard RaceMenu Scaleform path is stable.
     String[] params = new String[5]
     params[0] = callbackName
     params[1] = minValue as String
     params[2] = maxValue as String
     params[3] = intervalValue as String
     params[4] = positionValue as String
-    UI.InvokeStringA(_targetMenu, _targetRoot + "RSM_SetSliderParameters", params)
+    UI.InvokeStringA("RaceSex Menu", "_root.RaceSexMenuBaseInstance.RaceSexPanelsInstance.RSM_SetSliderParameters", params)
 EndFunction
 
 Function BHS_SetSliderToZero(String region, String callbackName)
@@ -218,8 +218,6 @@ Function BHS_ApplyColor(Float value)
     BodyHairSliders.SetColorIndex(requested)
 
     If BodyHairSliders.IsLegacySKEE()
-        ; Recolor only cached active BodyHairSliders regions. Each call updates the
-        ; saved NiOverride values but deliberately defers the expensive actor refresh.
         Bool changed = False
         If BHS_LegacyFullBody > 0
             BHS_ApplyRegionLegacy("fullbody", BHS_LegacyFullBody, BHS_IsFemale, False)
